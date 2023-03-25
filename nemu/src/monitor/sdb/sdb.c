@@ -18,6 +18,8 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
+#include "memory/vaddr.h"
+
 
 static int is_batch_mode = false;
 
@@ -58,7 +60,7 @@ static int cmd_si(char *args);
 
 static int cmd_info(char *args);
 
-//static int cmd_x(char *args);
+static int cmd_x(char *args);
 
 static struct {
   const char *name;
@@ -72,7 +74,7 @@ static struct {
   /* TODO: Add more commands */
   { "si", "Single step", cmd_si },
   { "info", "Print program status", cmd_info },
-  //{ "x", "Scan Memory", cmd_x },
+  { "x", "Scan Memory", cmd_x },
 };
 
 #define NR_CMD ARRLEN(cmd_table)
@@ -129,9 +131,22 @@ static int cmd_info(char *args) {
   return 0;
 }
 
-// static int cmd_x(char *args) {
+static int cmd_x(char *args) {
+  char *arg1 = strtok(NULL, " ");
+  char *arg2 = strtok(NULL, " ");
 
-// }
+  if (arg1 == NULL || arg2 == NULL) return 0;
+
+  word_t len = atoi(arg1);
+  vaddr_t addr = 0;
+  sscanf(arg2, "%x", &addr);
+
+  for (int i = 0; i < len; i++) {
+    printf("%x ", vaddr_read(addr, len));
+  }
+  printf("\n");
+  return 0;
+}
 
 void sdb_set_batch_mode() {
   is_batch_mode = true;
