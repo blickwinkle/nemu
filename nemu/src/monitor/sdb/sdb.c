@@ -140,9 +140,9 @@ static int cmd_x(char *args) {
   word_t len = atoi(arg1);
   vaddr_t addr = 0;
   sscanf(arg2, "%x", &addr);
-  printf("len : %u, addr : %x\n", len, addr);
+  //printf("len : %u, addr : %x\n", len, addr);
   for (int i = 0; i < len; i++) {
-    printf("%x ", vaddr_read(addr, len));
+    printf("%x ", vaddr_read(addr, 1));
   }
   printf("\n");
   return 0;
