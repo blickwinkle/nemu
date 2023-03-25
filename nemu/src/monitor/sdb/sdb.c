@@ -136,7 +136,7 @@ static int cmd_x(char *args) {
   char *arg2 = strtok(NULL, " ");
 
   if (arg1 == NULL || arg2 == NULL) return 0;
-
+  printf("arg1 : %s, arg2 : %s\n", arg1, arg2);
   word_t len = atoi(arg1);
   vaddr_t addr = 0;
   sscanf(arg2, "%x", &addr);
