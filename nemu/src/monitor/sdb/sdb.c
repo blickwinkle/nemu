@@ -142,7 +142,7 @@ static int cmd_x(char *args) {
   sscanf(arg2, "%x", &addr);
   //printf("len : %u, addr : %x\n", len, addr);
   for (int i = 0; i < len; i++) {
-    printf("%x ", vaddr_read(addr, 1));
+    printf("%x ", vaddr_read(addr + i, 1));
   }
   printf("\n");
   return 0;
