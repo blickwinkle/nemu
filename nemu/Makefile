@@ -50,7 +50,7 @@ CFLAGS  += $(CFLAGS_BUILD) $(CFLAGS_TRACE) -D__GUEST_ISA__=$(GUEST_ISA)
 LDFLAGS += $(CFLAGS_BUILD)
 
 txt = Hello World
-$(info $(txt))
+$(info $(CFLAGS))
 
 # Include rules for menuconfig
 include $(NEMU_HOME)/scripts/config.mk
