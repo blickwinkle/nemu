@@ -49,9 +49,8 @@ CFLAGS_TRACE += -DITRACE_COND=$(if $(CONFIG_ITRACE_COND),$(call remove_quote,$(C
 CFLAGS  += $(CFLAGS_BUILD) $(CFLAGS_TRACE) -D__GUEST_ISA__=$(GUEST_ISA)
 LDFLAGS += $(CFLAGS_BUILD)
 
-txt = Hello World
 $(info $(CFLAGS))
-
+$(info $(LDFLAGS))
 # Include rules for menuconfig
 include $(NEMU_HOME)/scripts/config.mk
 
