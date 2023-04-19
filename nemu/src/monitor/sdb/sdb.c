@@ -26,7 +26,9 @@ static int is_batch_mode = false;
 
 void init_regex();
 void init_wp_pool();
-
+void list_watchpoint();
+int set_watchpoint(char *e);
+bool delete_watchpoint(int NO);
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
   static char *line_read = NULL;
@@ -65,6 +67,10 @@ static int cmd_x(char *args);
 
 static int cmd_p(char *args);
 
+static int cmd_w(char *args);
+
+static int cmd_d(char *args);
+
 static struct {
   const char *name;
   const char *description;
@@ -79,9 +85,40 @@ static struct {
   { "info", "Print program status", cmd_info },
   { "x", "Scan Memory", cmd_x },
   { "p", "Expression Evaluation", cmd_p },
+  { "w", "Set WatchPoint", cmd_w },
+  { "d", "Delete WatchPoint", cmd_d },
 };
 
 #define NR_CMD ARRLEN(cmd_table)
+
+
+
+static int cmd_w(char *args) {
+  /* extract the first argument */
+  if (args == NULL) {
+    printf("error args\n");
+    return 0;
+  }
+  int wp_no = set_watchpoint(args);
+  printf("WatchPoint %d: %s\n", wp_no, args);
+
+  return 0;
+}
+
+static int cmd_d(char *args) {
+  /* extract the first argument */
+  if (args == NULL) {
+    printf("error args\n");
+    return 0;
+  }
+  int wp_no = atoi(args);
+  if (delete_watchpoint(wp_no)) {
+    printf("WatchPoint %d deleted\n", wp_no);
+  } else {
+    printf("WatchPoint %d not found\n", wp_no);
+  }
+  return 0;
+}
 
 static int cmd_p(char *args) {
   /* extract the first argument */
@@ -142,6 +179,10 @@ static int cmd_info(char *args) {
   }
   if (strcmp(arg, "r") == 0) {
     isa_reg_display();
+  } else if (strcmp(arg, "w") == 0) {
+    list_watchpoint();
+  } else {
+    printf("error args\n");
   }
   return 0;
 }

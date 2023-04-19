@@ -22,7 +22,8 @@ typedef struct watchpoint {
   struct watchpoint *next;
 
   /* TODO: Add more members if necessary */
-
+  word_t val;
+  char *expr;
 } WP;
 
 static WP wp_pool[NR_WP] = {};
@@ -37,6 +38,88 @@ void init_wp_pool() {
 
   head = NULL;
   free_ = wp_pool;
+}
+
+WP* new_wp() {
+  if (free_ == NULL) {
+    panic("no more watchpoint");
+  }
+  WP *wp = free_;
+  free_ = free_->next;
+  wp->next = head;
+  head = wp;
+  return wp;
+}
+void free_wp(WP *wp) {
+  if (wp == head) {
+    head = head->next;
+  } else {
+    WP *p = head;
+    while (p->next != wp) {
+      p = p->next;
+    }
+    p->next = wp->next;
+  }
+  wp->next = free_;
+  free_ = wp;
+}
+
+int set_watchpoint(char *e) {
+  bool success;
+  word_t val = expr(e, &success);
+  if (!success) return -1;
+
+  WP *p = new_wp();
+  p->expr = strdup(e);
+  p->val = val;
+
+  p->next = head;
+  head = p;
+
+  return p->NO;
+}
+
+bool delete_watchpoint(int NO) {
+  WP *p, *prev = NULL;
+  for (p = head; p != NULL; prev = p, p = p->next) {
+    if (p->NO == NO) { break; }
+  }
+
+  if (p == NULL) { return false; }
+  if (prev == NULL) { head = p->next; }
+  else { prev->next = p->next; }
+
+  free_wp(p);
+  return true;
+}
+
+void list_watchpoint() {
+  if (head == NULL) {
+    printf("No watchpoints\n");
+    return;
+  }
+
+  printf("%8s\t%8s\t%8s\n", "NO", "Address", "Enable");
+  WP *p;
+  for (p = head; p != NULL; p = p->next) {
+    printf("%8d\t%s\t" FMT_WORD "\n", p->NO, p->expr, p->val);
+  }
+}
+
+void scan_watchpoint() {
+  for (WP *p = head; p; p = p->next) {
+    bool success = true;
+    word_t val = expr(p->expr, &success);
+    if (!success) {
+      printf("Expression %s is invalid", p->expr);
+      continue ;
+    }
+    if (val != p->val) {
+      printf("Expression %s changed from %u to %u", p->expr, p->val, val);
+      p->val = val;
+      nemu_state.state = NEMU_STOP;
+    }
+  }
 }
 
 /* TODO: Implement the functionality of watchpoint */
