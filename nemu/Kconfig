@@ -157,7 +157,9 @@ config DIFFTEST
 
 config WATCHPOINT
   bool "Enable watchpoint"
-  default "false"
+  default n
+  help
+    Note that this will significantly reduce the performance of NEMU.
 
 choice
   prompt "Reference design"
