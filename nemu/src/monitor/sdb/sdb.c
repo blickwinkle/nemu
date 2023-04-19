@@ -17,6 +17,7 @@
 #include <cpu/cpu.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <stdio.h>
 #include "sdb.h"
 #include "memory/vaddr.h"
 
@@ -62,6 +63,8 @@ static int cmd_info(char *args);
 
 static int cmd_x(char *args);
 
+static int cmd_p(char *args);
+
 static struct {
   const char *name;
   const char *description;
@@ -75,9 +78,24 @@ static struct {
   { "si", "Single step", cmd_si },
   { "info", "Print program status", cmd_info },
   { "x", "Scan Memory", cmd_x },
+  { "p", "Expression Evaluation", cmd_p },
 };
 
 #define NR_CMD ARRLEN(cmd_table)
+
+static int cmd_p(char *args) {
+  /* extract the first argument */
+  char *arg = strtok(NULL, " ");
+
+  if (arg == NULL) {
+    /* no argument given */
+    printf("error p args\n");
+    return 0;
+  }
+  bool success = true;
+  printf("%d", expr(arg, &success)); 
+  return 0;
+}
 
 static int cmd_help(char *args) {
   /* extract the first argument */
