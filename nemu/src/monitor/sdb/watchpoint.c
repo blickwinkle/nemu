@@ -73,21 +73,16 @@ int set_watchpoint(char *e) {
   p->expr = strdup(e);
   p->val = val;
 
-  p->next = head;
-  head = p;
-
   return p->NO;
 }
 
 bool delete_watchpoint(int NO) {
-  WP *p, *prev = NULL;
-  for (p = head; p != NULL; prev = p, p = p->next) {
+  WP *p;
+  for (p = head; p != NULL; p = p->next) {
     if (p->NO == NO) { break; }
   }
 
   if (p == NULL) { return false; }
-  if (prev == NULL) { head = p->next; }
-  else { prev->next = p->next; }
 
   free_wp(p);
   return true;
