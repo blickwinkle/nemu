@@ -22,7 +22,7 @@
 
 enum {
   TK_NOTYPE = 256, TK_EQ, TK_NUM,
-
+  TK_NEQ, TK_OR, TK_AND, TK_REG, TK_REF, TK_NEG
   /* TODO: Add more token types */
 
 };
@@ -40,12 +40,21 @@ static struct rule {
   {"\\+", '+'},         // plus
   {"==", TK_EQ},        // equal
 
-  {"\\-", '-'},         // minus
-  {"\\*", '*'},         // multiply
-  {"\\/", '/'},         // divide
-  {"\\(", '('},         // left bracket
-  {"\\)", ')'},         // right bracket
-  {"\\b[0-9]+\\b", TK_NUM}, // number
+  {"0x[0-9a-fA-F]{1,16}", TK_NUM},  // hex
+  {"[0-9]{1,10}", TK_NUM},         // dec
+  {"\\$[a-z0-9]{1,31}", TK_REG},   // register names
+  {"\\+", '+'},
+  {"-", '-'},
+  {"\\*", '*'},
+  {"/", '/'},
+  {"%", '%'},
+  {"==", TK_EQ},
+  {"!=", TK_NEQ},
+  {"&&", TK_AND},
+  {"\\|\\|", TK_OR},
+  {"!", '!'},
+  {"\\(", '('},
+  {"\\)", ')'}
 
   //{"^(\\-|\\+)?\\d+(\\.\\d+)?$", TK_NUM},         // plus
 };
@@ -105,34 +114,12 @@ static bool make_token(char *e) {
 
         switch (rules[i].token_type) {
           case TK_NOTYPE : {
-            //nr_token++;
+            // do nothing
           } break ;
-          case '+' : {
-            tokens[nr_token++].type = '+';
-          } break ;
-          case '-' : {
-            tokens[nr_token++].type = '-';
-          } break ;
-          case '*' : {
-            tokens[nr_token++].type = '*';
-          } break ;
-          case '/' : {
-            tokens[nr_token++].type = '/';
-          } break ;
-          case '(': {
-            tokens[nr_token++].type = '(';
-          } break ;
-          case ')': {
-            tokens[nr_token++].type = ')';
-          } break ;
-          case TK_EQ : {
-            tokens[nr_token++].type = TK_EQ;
-          } break ;
-          case TK_NUM : {
-            tokens[nr_token].type = TK_NUM;
-            strncpy(tokens[nr_token++].str, substr_start, substr_len);
-          } break ;
-          default: TODO();
+          case TK_NUM:
+          case TK_REG: sprintf(tokens[nr_token].str, "%.*s", substr_len, substr_start);
+          default: tokens[nr_token].type = rules[i].token_type;
+                   nr_token ++;
         }
 
         break;
