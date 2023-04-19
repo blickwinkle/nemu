@@ -40,13 +40,14 @@ static struct rule {
   {"\\+", '+'},         // plus
   {"==", TK_EQ},        // equal
 
-  {"\\-", '-'},         // plus
-  {"\\*", '*'},         // plus
-  {"\\/", '/'},         // plus
-  {"\\(", '('},         // plus
-  {"\\)", ')'},         // plus
+  {"\\-", '-'},         // minus
+  {"\\*", '*'},         // multiply
+  {"\\/", '/'},         // divide
+  {"\\(", '('},         // left bracket
+  {"\\)", ')'},         // right bracket
+  {"^[±]?(\\d*\\.)?\\d+$", TK_NUM}, // number
 
-  {"^(\\-|\\+)?\\d+(\\.\\d+)?$", TK_NUM},         // plus
+  //{"^(\\-|\\+)?\\d+(\\.\\d+)?$", TK_NUM},         // plus
 };
 
 #define NR_REGEX ARRLEN(rules)
