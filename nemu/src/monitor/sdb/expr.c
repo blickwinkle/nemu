@@ -249,7 +249,7 @@ word_t eval(int p, int q) {
       return 0;
     }
     return strtoul(tokens[p].str, NULL, 0);
-  } else if (tokens[p].type == '(' && tokens[p].type == ')') {
+  } else if (tokens[p].type == '(' && tokens[q].type == ')') {
     return eval(p + 1, q - 1);
   } else {
     bool success = true;
