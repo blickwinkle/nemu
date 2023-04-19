@@ -90,7 +90,7 @@ static int cmd_p(char *args) {
     return 0;
   }
   bool success = true;
-  printf("%d\n", expr(args, &success)); 
+  printf("%u\n", expr(args, &success)); 
   return 0;
 }
 
