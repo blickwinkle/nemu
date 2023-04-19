@@ -45,7 +45,7 @@ static struct rule {
   {"\\/", '/'},         // divide
   {"\\(", '('},         // left bracket
   {"\\)", ')'},         // right bracket
-  {"^[±]?(\\d*\\.)?\\d+", TK_NUM}, // number
+  {"\\b[0-9]+\\b", TK_NUM}, // number
 
   //{"^(\\-|\\+)?\\d+(\\.\\d+)?$", TK_NUM},         // plus
 };
