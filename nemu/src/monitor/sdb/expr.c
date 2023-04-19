@@ -149,43 +149,58 @@ static int check_parentheses(int p, int q) {
   return ind == 0 ? true : false;
 }
 
-static int findMainOp(int p, int q) {
-  int ind = 0;
-  int ret = -1;
-  for (int i = p; i <= q; i++)
-  {
-    if (tokens[i].type == '(')
-    {
-      ind++;
-      continue;
-    }
-    else if (tokens[i].type == ')')
-    {
-      ind--;
-      continue;
-    }
-    if (tokens[i].type == TK_NUM || ind != 0) {
-      continue ;
-    }
-    switch (tokens[i].type)
-    {
-    case '+':
-    case '-': {
-      ret = i;
-    } break ;
+static int op_prec(int t) {
+  switch (t) {
+    case '!': case TK_NEG: case TK_REF: return 0;
+    case '*': case '/': case '%': return 1;
+    case '+': case '-': return 2;
+    case TK_EQ: case TK_NEQ: return 4;
+    case TK_AND: return 8;
+    case TK_OR: return 9;
+    default: assert(0);
+  }
+}
 
-    case '*':
-    case '/': {
-      if (ret == -1 || tokens[ret].type == '*' || tokens[ret].type == '/') {
-        ret = i;
-      }
-    } break;
+static inline int op_prec_cmp(int t1, int t2) {
+  return op_prec(t1) - op_prec(t2);
+}
 
-    default:
-      break;
+static int find_dominated_op(int s, int e, bool *success) {
+  int i;
+  int bracket_level = 0;
+  int dominated_op = -1;
+  for (i = s; i <= e; i ++) {
+    switch (tokens[i].type) {
+      case TK_REG: case TK_NUM: break;
+
+      case '(':
+        bracket_level ++;
+        break;
+
+      case ')':
+        bracket_level --;
+        if (bracket_level < 0) {
+          *success = false;
+          return 0;
+        }
+        break;
+
+      default:
+        if (bracket_level == 0) {
+          if (dominated_op == -1 ||
+              op_prec_cmp(tokens[dominated_op].type, tokens[i].type) < 0 ||
+              (op_prec_cmp(tokens[dominated_op].type, tokens[i].type) == 0 &&
+               tokens[i].type != '!' && tokens[i].type != '~' &&
+               tokens[i].type != TK_NEG && tokens[i].type != TK_REF) ) {
+            dominated_op = i;
+          }
+        }
+        break;
     }
   }
-  return ret;
+
+  *success = (dominated_op != -1);
+  return dominated_op;
 }
 
 word_t eval(int p, int q) {
@@ -198,7 +213,8 @@ word_t eval(int p, int q) {
   } else if (tokens[p].type == '(' && tokens[p].type == ')' && check_parentheses(p + 1, q - 1) == true) {
     return eval(p + 1, q - 1);
   } else {
-    int mop = findMainOp(p, q);
+    bool success;
+    int mop = find_dominated_op(p, q, &success);
     assert(mop != -1);
     word_t val1 = eval(p, mop - 1);
     word_t val2 = eval(mop + 1, q);
