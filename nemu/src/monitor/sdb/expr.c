@@ -13,6 +13,7 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
+#include "memory/vaddr.h"
 #include <isa.h>
 
 /* We use the POSIX regex functions to process regular expressions.
@@ -135,18 +136,18 @@ static bool make_token(char *e) {
 }
 
 
-static int check_parentheses(int p, int q) {
-  int ind = 0;
-  for (int i = p; i <= q; i++) {
-    if (tokens[i].type == '(') {
-      ind++;
-    } else if (tokens[i].type == ')') {
-      if (ind == 0) return false;
-      ind --;
-    }
-  }
-  return ind == 0 ? true : false;
-}
+// static int check_parentheses(int p, int q) {
+//   int ind = 0;
+//   for (int i = p; i <= q; i++) {
+//     if (tokens[i].type == '(') {
+//       ind++;
+//     } else if (tokens[i].type == ')') {
+//       if (ind == 0) return false;
+//       ind --;
+//     }
+//   }
+//   return ind == 0 ? true : false;
+// }
 
 static int op_prec(int t) {
   switch (t) {
@@ -202,85 +203,114 @@ static int find_dominated_op(int s, int e, bool *success) {
   return dominated_op;
 }
 
-static int findMainOp(int p, int q) {
-  int ind = 0;
-  int ret = -1;
-  for (int i = p; i <= q; i++)
-  {
-    if (tokens[i].type == '(')
-    {
-      ind++;
-      continue;
-    }
-    else if (tokens[i].type == ')')
-    {
-      ind--;
-      continue;
-    }
-    if (tokens[i].type == TK_NUM || ind != 0) {
-      continue ;
-    }
-    switch (tokens[i].type)
-    {
-    case '+':
-    case '-': {
-      ret = i;
-    } break ;
 
-    case '*':
-    case '/': {
-      if (ret == -1 || tokens[ret].type == '*' || tokens[ret].type == '/') {
-        ret = i;
-      }
-    } break;
+// static int findMainOp(int p, int q) {
+//   int ind = 0;
+//   int ret = -1;
+//   for (int i = p; i <= q; i++)
+//   {
+//     if (tokens[i].type == '(')
+//     {
+//       ind++;
+//       continue;
+//     }
+//     else if (tokens[i].type == ')')
+//     {
+//       ind--;
+//       continue;
+//     }
+//     if (tokens[i].type == TK_NUM || ind != 0) {
+//       continue ;
+//     }
+//     switch (tokens[i].type)
+//     {
+//     case '+':
+//     case '-': {
+//       ret = i;
+//     } break ;
 
-    default:
-      break;
-    }
-  }
-  return ret;
-}
+//     case '*':
+//     case '/': {
+//       if (ret == -1 || tokens[ret].type == '*' || tokens[ret].type == '/') {
+//         ret = i;
+//       }
+//     } break;
 
-word_t eval(int p, int q) {
+//     default:
+//       break;
+//     }
+//   }
+//   return ret;
+// }
+
+word_t eval(int p, int q, bool *success) {
   if (p > q) return 0;
   else if (p == q) {
-    if (tokens[p].type != TK_NUM) {
-      return 0;
+    if (tokens[p].type == TK_NUM) {
+      return strtoul(tokens[p].str, NULL, 0);
+    } else if (tokens[p].type == TK_REG) {
+      return isa_reg_str2val(tokens[p].str, success);
+    } else {
+      *success = false;
     }
-    return strtoul(tokens[p].str, NULL, 0);
+    
   } else if (tokens[p].type == '(' && tokens[q].type == ')') {
-    return eval(p + 1, q - 1);
+    return eval(p + 1, q - 1, success);
   } else {
-    bool success = true;
-    // int mop = find_dominated_op(p, q, &success);
-    int mop = findMainOp(p, q);
-    int mp2 = find_dominated_op(p, q, &success);
-    assert(mop == mp2);
-    assert(success);
-    word_t val1 = eval(p, mop - 1);
-    word_t val2 = eval(mop + 1, q);
+    int mop = find_dominated_op(p, q, success);
+    
+    int op_type = tokens[mop].type;
+    if (op_type == '!' || op_type == TK_NEG || op_type == TK_REF) {
+      word_t val = eval(mop + 1, q, success);
+      if (!*success) { return 0; }
+
+      switch (op_type) {
+        case '!': return !val;
+        case TK_NEG: return -val;
+        case TK_REF: return vaddr_read(val, 4);
+        default: assert(0);
+      }
+    }
+
+    if (!*success) { return 0; }
+    word_t val1 = eval(p, mop - 1, success);
+    if (!*success) { return 0; }
+    word_t val2 = eval(mop + 1, q, success);
+    if (!*success) { return 0; }
 
     switch (tokens[mop].type) {
       case '+': return val1 + val2;
       case '-': return val1 - val2;
       case '*': return val1 * val2;
       case '/': return val1 / val2;
+      case '%': return val1 % val2;
+      case TK_EQ: return val1 == val2;
+      case TK_NEQ: return val1 != val2;
+      case TK_AND: return val1 && val2;
+      case TK_OR: return val1 || val2;
+      
       default: assert(0);
     }
   }
+  return 0;
 }
 
 word_t expr(char *e, bool *success) {
-  if (!make_token(e) || check_parentheses(0, nr_token - 1) == false) {
+  if (!make_token(e)) {
     *success = false;
     return 0;
   }
-
+  for (int i = 0; i < nr_token; i++) {
+    if (tokens[i].type == '*' && (i == 0 || (tokens[i - 1].type != TK_NUM && tokens[i - 1].type != TK_REG && tokens[i - 1].type != ')'))) {
+      tokens[i].type = TK_REF;
+    }
+  }
+  for (int i = 0; i < nr_token; i++) {
+    if (tokens[i].type == '-' && (i == 0 || (tokens[i - 1].type != TK_NUM && tokens[i - 1].type != TK_REG && tokens[i - 1].type != ')'))) {
+      tokens[i].type = TK_NEG;
+    }
+  }
   /* TODO: Insert codes to evaluate the expression. */
-  return eval(0, nr_token - 1);
-  
-  
-  TODO();
+  return eval(0, nr_token - 1, success);
 
-  return 0;
 }
