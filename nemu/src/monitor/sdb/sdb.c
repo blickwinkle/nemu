@@ -85,15 +85,12 @@ static struct {
 
 static int cmd_p(char *args) {
   /* extract the first argument */
-  char *arg = strtok(NULL, " ");
-
-  if (arg == NULL) {
-    /* no argument given */
-    printf("error p args\n");
+  if (args == NULL) {
+    printf("error args\n");
     return 0;
   }
   bool success = true;
-  printf("%d\n", expr(arg, &success)); 
+  printf("%d\n", expr(args, &success)); 
   return 0;
 }
 
