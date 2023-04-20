@@ -156,12 +156,7 @@ static int cmd_help(char *args) {
 
 static int cmd_si(char *args) {
   char *arg = strtok(NULL, " ");
-  if (arg == NULL) {
-    /* no argument given */
-    printf("error si args\n");
-    return 0;
-  }
-  int i = atoi(arg);
+  int i = arg != NULL ? atoi(arg) : 1;
   if (i <= 0) {
     printf("error si args\n");
     return 0;
