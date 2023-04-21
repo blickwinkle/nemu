@@ -18,6 +18,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <stdio.h>
+#include "macro.h"
 #include "sdb.h"
 #include "memory/vaddr.h"
 
@@ -55,7 +56,7 @@ static int cmd_c(char *args) {
 
 static int cmd_q(char *args) {
   void free_ftrace_func();
-  free_ftrace_func();
+  IFDEF(CONFIG_ITRACE_FUNC, free_ftrace_func();) // free ftrace_func
   return -1;
 }
 
