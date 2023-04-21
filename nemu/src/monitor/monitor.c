@@ -120,6 +120,7 @@ static void init_ftrace(char *elf_file) {
       }
       free(symtab);
       free(strtab);
+      break ;
     }
   }
   fclose(fp);
