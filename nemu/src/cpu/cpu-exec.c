@@ -69,7 +69,7 @@ static void exec_once(Decode *s, vaddr_t pc) {
   void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
   disassemble(p, s->logbufs.buf[s->logbufs.idx] + sizeof(s->logbufs.buf[s->logbufs.idx]) - p,
       MUXDEF(CONFIG_ISA_x86, s->snpc, s->pc), (uint8_t *)&s->isa.inst.val, ilen);
-  
+  puts(s->logbufs.buf[s->logbufs.idx]);
 #endif
 }
 
