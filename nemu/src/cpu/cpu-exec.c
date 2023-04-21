@@ -69,7 +69,6 @@ static void exec_once(Decode *s, vaddr_t pc) {
   void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
   disassemble(p, s->logbufs.buf[s->logbufs.idx] + sizeof(s->logbufs.buf[s->logbufs.idx]) - p,
       MUXDEF(CONFIG_ISA_x86, s->snpc, s->pc), (uint8_t *)&s->isa.inst.val, ilen);
-  puts(s->logbufs.buf[s->logbufs.idx]);
 #endif
 }
 
@@ -79,7 +78,21 @@ static void execute(uint64_t n) {
     exec_once(&s, cpu.pc);
     g_nr_guest_inst ++;
     trace_and_difftest(&s, cpu.pc);
-    if (nemu_state.state != NEMU_RUNNING) break;
+    if (nemu_state.state != NEMU_RUNNING) { 
+      #ifdef CONFIG_ITRACE
+      //打印ringbuffer, 打印当前pc的记录时，多输出一个“-->”
+      for (int i = 1; i <= s.logbufs.size; i ++) {
+        int idx = (s.logbufs.idx + i) % s.logbufs.size;
+        if (s.logbufs.buf[idx][0] != '\0') {
+          if (idx == s.logbufs.idx) printf("---> ");
+          else printf("    ");
+          puts(s.logbufs.buf[idx]);
+        }
+      }
+      #endif
+      
+      break;
+    }
     IFDEF(CONFIG_DEVICE, device_update());
   }
 }
