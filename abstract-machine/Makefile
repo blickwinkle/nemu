@@ -83,6 +83,7 @@ CFLAGS   += -O2 -MMD -Wall -Werror $(INCFLAGS) \
             -D__ARCH__=$(ARCH) -D__ARCH_$(shell echo $(ARCH) | tr a-z A-Z | tr - _) \
             -D__PLATFORM__=$(PLATFORM) -D__PLATFORM_$(shell echo $(PLATFORM) | tr a-z A-Z | tr - _) \
 			-DCONFIG_TARGET_AM=true\
+			-DTARGET_AM=true\
             -DARCH_H=\"arch/$(ARCH).h\" \
             -fno-asynchronous-unwind-tables -fno-builtin -fno-stack-protector \
             -Wno-main -U_FORTIFY_SOURCE
