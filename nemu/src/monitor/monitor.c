@@ -108,7 +108,9 @@ static void init_ftrace(char *elf_file) {
   Elf32_Shdr shstr;
   fread(&shstr, sizeof(shstr), 1, fp);
   fseek(fp, shstr.sh_offset, SEEK_SET);
+
   char *shstrtab = malloc(shstr.sh_size);
+
   fread(shstrtab, shstr.sh_size, 1, fp);
   fseek(fp, ehdr.e_shoff, SEEK_SET);
   for (int i = 0; i < ehdr.e_shnum; i++) {
@@ -156,6 +158,7 @@ static void init_ftrace(char *elf_file) {
       break ;
     }
   }
+  free(shstrtab);
   fclose(fp);
   
 }
