@@ -16,6 +16,7 @@
 #include <isa.h>
 #include <memory/paddr.h>
 #include <elf.h>
+#include <stdio.h>
 
 void init_rand();
 void init_log(const char *log_file);
@@ -77,6 +78,7 @@ void free_ftrace_func() {
   }
 }
 
+
 const char *get_func_name(uint32_t addr) {
   ftrace_func_t *func = ftrace_func_head;
   while (func) {
@@ -86,6 +88,38 @@ const char *get_func_name(uint32_t addr) {
     func = func->next;
   }
   return NULL;
+}
+
+static uint32_t call_layer = 0;
+
+void call_ftrace(uint32_t inst_addr, uint32_t next_addr) {
+  call_layer++;
+  const char *func_name = get_func_name(next_addr);
+  if (func_name) {
+    char buf[256] = {0};
+    sprintf(buf, "%x:", inst_addr);
+    for (int i = 0; i < call_layer; i++) {
+      strcat(buf, " ");
+    }
+    char buf2[256] = {0};
+    sprintf(buf2, "%s call [%s@%x]", buf, func_name, next_addr);
+    Log("%s", buf2);
+  }
+}
+
+void ret_ftrace(uint32_t inst_addr, uint32_t next_addr) {
+  const char *func_name = get_func_name(next_addr);
+  if (func_name) {
+    char buf[256] = {0};
+    sprintf(buf, "%x:", inst_addr);
+    for (int i = 0; i < call_layer; i++) {
+      strcat(buf, " ");
+    }
+    char buf2[256] = {0};
+    sprintf(buf2, "%s ret [%s@%x]", buf, func_name, next_addr);
+    Log("%s", buf2);
+  }
+  call_layer--;
 }
 
 static void init_ftrace(char *elf_file) {
