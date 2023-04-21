@@ -48,15 +48,48 @@ static char *img_file = NULL;
 static char *elf_file = NULL;
 static int difftest_port = 1234;
 
-// struct {
-//   int nr_symtab;
-//   Elf32_Sym *symtab;
-//   int nr_strtab;
-//   char *strtab;
-// } elf;
+#ifdef CONFIG_ITRACE_FUNC
+typedef struct ftrace_func {
+  uint32_t addr;
+  uint32_t size;
+  char *name;
+  struct ftrace_func *next;
+} ftrace_func_t;
+
+static ftrace_func_t *ftrace_func_head = NULL;
+
+static void add_func(const char *name, uint32_t addr, uint32_t size) {
+  ftrace_func_t *func = malloc(sizeof(ftrace_func_t));
+  func->name = strdup(name);
+  func->addr = addr;
+  func->size = size;
+  func->next = ftrace_func_head;
+  ftrace_func_head = func;
+}
+
+void free_ftrace_func() {
+  ftrace_func_t *func = ftrace_func_head;
+  while (func) {
+    ftrace_func_t *next = func->next;
+    free(func->name);
+    free(func);
+    func = next;
+  }
+}
+
+const char *get_func_name(uint32_t addr) {
+  ftrace_func_t *func = ftrace_func_head;
+  while (func) {
+    if (func->addr <= addr && addr < func->addr + func->size) {
+      return func->name;
+    }
+    func = func->next;
+  }
+  return NULL;
+}
 
 static void init_ftrace(char *elf_file) {
-  #ifdef CONFIG_ITRACE_FUNC
+
   // 读取elf文件
   // read elf file
   if (elf_file == NULL) {
@@ -112,7 +145,7 @@ static void init_ftrace(char *elf_file) {
           size_t size = symtab[i].st_size;
           // 将函数的信息添加到函数列表中
           // add the information of the function to the function list
-          // add_func(name, addr, size);
+          add_func(name, addr, size);
           // 打印一下
           // print it
           Log("Function '%s' is loaded at 0x%08x, size = %zu", name, addr, size);
@@ -124,8 +157,9 @@ static void init_ftrace(char *elf_file) {
     }
   }
   fclose(fp);
-  #endif
+  
 }
+#endif // CONFIG_ITRACE_FUNC
 
 static long load_img() {
   if (img_file == NULL) {

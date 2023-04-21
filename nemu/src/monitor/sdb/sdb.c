@@ -54,6 +54,8 @@ static int cmd_c(char *args) {
 
 
 static int cmd_q(char *args) {
+  void free_ftrace_func();
+  free_ftrace_func();
   return -1;
 }
 
