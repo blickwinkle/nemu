@@ -18,12 +18,20 @@
 
 #include <isa.h>
 
+#define Ring_Buffer_Size 32
+typedef struct iRingBuffer {
+  uint32_t size;
+  uint32_t idx;
+  char buf[Ring_Buffer_Size][128];
+} iRingBuffer;
+
 typedef struct Decode {
   vaddr_t pc;
   vaddr_t snpc; // static next pc
   vaddr_t dnpc; // dynamic next pc
   ISADecodeInfo isa;
-  IFDEF(CONFIG_ITRACE, char logbuf[128]);
+  // IFDEF(CONFIG_ITRACE, char logbuf[128]);
+  IFDEF(CONFIG_ITRACE, iRingBuffer logbufs);
 } Decode;
 
 // --- pattern matching mechanism ---

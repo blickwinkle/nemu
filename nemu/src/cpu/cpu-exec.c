@@ -28,16 +28,16 @@
 CPU_state cpu = {};
 uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
-static bool g_print_step = false;
+static bool g_print_step = true;
 
 void device_update();
 void scan_watchpoint();
 
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
-  if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }
+  if (ITRACE_COND) { log_write("%s\n", _this->logbufs.buf[_this->logbufs.idx]); }
 #endif
-  if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
+  if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbufs.buf[_this->logbufs.idx])); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
   IFDEF(CONFIG_WATCHPOINT, scan_watchpoint());
 }
@@ -48,8 +48,10 @@ static void exec_once(Decode *s, vaddr_t pc) {
   isa_exec_once(s);
   cpu.pc = s->dnpc;
 #ifdef CONFIG_ITRACE
-  char *p = s->logbuf;
-  p += snprintf(p, sizeof(s->logbuf), FMT_WORD ":", s->pc);
+  s->logbufs.idx = (s->logbufs.idx + 1) % s->logbufs.size;
+  char *p = s->logbufs.buf[s->logbufs.idx];
+  
+  p += snprintf(p, sizeof(s->logbufs.buf[s->logbufs.idx]), FMT_WORD ":", s->pc);
   int ilen = s->snpc - s->pc;
   int i;
   uint8_t *inst = (uint8_t *)&s->isa.inst.val;
@@ -65,13 +67,14 @@ static void exec_once(Decode *s, vaddr_t pc) {
   p += space_len;
   
   void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
-  disassemble(p, s->logbuf + sizeof(s->logbuf) - p,
+  disassemble(p, s->logbufs.buf[s->logbufs.idx] + sizeof(s->logbufs.buf[s->logbufs.idx]) - p,
       MUXDEF(CONFIG_ISA_x86, s->snpc, s->pc), (uint8_t *)&s->isa.inst.val, ilen);
+  
 #endif
 }
 
 static void execute(uint64_t n) {
-  Decode s;
+  Decode s = { .logbufs = { .size = Ring_Buffer_Size, .idx = 0 }};
   for (;n > 0; n --) {
     exec_once(&s, cpu.pc);
     g_nr_guest_inst ++;
