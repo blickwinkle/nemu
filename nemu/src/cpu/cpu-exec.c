@@ -84,13 +84,13 @@ static void execute(uint64_t n) {
       for (int i = 1; i <= s.logbufs.size; i ++) {
         int idx = (s.logbufs.idx + i) % s.logbufs.size;
         if (s.logbufs.buf[idx][0] != '\0') {
-          if (idx == s.logbufs.idx) printf("---> ");
+          if (idx == s.logbufs.idx) printf("--> ");
           else printf("    ");
           puts(s.logbufs.buf[idx]);
         }
       }
       #endif
-      
+
       break;
     }
     IFDEF(CONFIG_DEVICE, device_update());
