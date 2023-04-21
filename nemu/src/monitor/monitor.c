@@ -15,6 +15,7 @@
 
 #include <isa.h>
 #include <memory/paddr.h>
+#include <elf.h>
 
 void init_rand();
 void init_log(const char *log_file);
@@ -44,7 +45,86 @@ void sdb_set_batch_mode();
 static char *log_file = NULL;
 static char *diff_so_file = NULL;
 static char *img_file = NULL;
+static char *elf_file = NULL;
 static int difftest_port = 1234;
+
+// struct {
+//   int nr_symtab;
+//   Elf32_Sym *symtab;
+//   int nr_strtab;
+//   char *strtab;
+// } elf;
+
+static void init_ftrace(char *elf_file) {
+  #ifdef CONFIG_ITRACE_FUNC
+  // 读取elf文件
+  // read elf file
+  if (elf_file == NULL) {
+    Log("No elf file specified, ftrace disabled");
+    return;
+  }
+  FILE *fp = fopen(elf_file, "rb");
+  Assert(fp, "Can not open '%s'", elf_file);
+  // 解析该elf文件，获取所有函数的开始地址，大小，以及函数名
+  // and parse the elf file to get the start address, size and function name of all functions
+  Elf32_Ehdr ehdr;
+  fread(&ehdr, sizeof(ehdr), 1, fp);
+  // 读取symtab
+  // read symtab
+  fseek(fp, ehdr.e_shoff + ehdr.e_shstrndx * sizeof(Elf32_Shdr), SEEK_SET);
+  Elf32_Shdr shstr;
+  fread(&shstr, sizeof(shstr), 1, fp);
+  fseek(fp, shstr.sh_offset, SEEK_SET);
+  char *shstrtab = malloc(shstr.sh_size);
+  fread(shstrtab, shstr.sh_size, 1, fp);
+  fseek(fp, ehdr.e_shoff, SEEK_SET);
+  for (int i = 0; i < ehdr.e_shnum; i++) {
+    Elf32_Shdr shdr;
+    fread(&shdr, sizeof(shdr), 1, fp);
+    if (strcmp(shstrtab + shdr.sh_name, ".symtab") == 0) {
+      // 读取symtab
+      // read symtab
+      fseek(fp, shdr.sh_offset, SEEK_SET);
+      int nr_symtab = shdr.sh_size / sizeof(Elf32_Sym);
+      Elf32_Sym *symtab = malloc(shdr.sh_size);
+      fread(symtab, shdr.sh_size, 1, fp);
+      // 读取strtab
+      // read strtab
+      fseek(fp, ehdr.e_shoff + shdr.sh_link * sizeof(Elf32_Shdr), SEEK_SET);
+      Elf32_Shdr str_shdr;
+      fread(&str_shdr, sizeof(str_shdr), 1, fp);
+      fseek(fp, str_shdr.sh_offset, SEEK_SET);
+      // int nr_strtab = str_shdr.sh_size;
+      char *strtab = malloc(str_shdr.sh_size);
+      fread(strtab, str_shdr.sh_size, 1, fp);
+      // 读取所有函数的信息
+      // read the information of all functions
+      for (int i = 0; i < nr_symtab; i++) {
+        if (ELF32_ST_TYPE(symtab[i].st_info) == STT_FUNC) {
+          // 读取函数名
+          // read function name
+          char *name = strtab + symtab[i].st_name;
+          // 读取函数的开始地址
+          // read the start address of the function
+          paddr_t addr = symtab[i].st_value;
+          // 读取函数的大小
+          // read the size of the function
+          size_t size = symtab[i].st_size;
+          // 将函数的信息添加到函数列表中
+          // add the information of the function to the function list
+          // add_func(name, addr, size);
+          // 打印一下
+          // print it
+          Log("Function '%s' is loaded at 0x%08x, size = %zu", name, addr, size);
+        }
+      }
+      free(symtab);
+      free(strtab);
+    }
+  }
+  fclose(fp);
+  #endif
+}
 
 static long load_img() {
   if (img_file == NULL) {
@@ -65,6 +145,7 @@ static long load_img() {
   assert(ret == 1);
 
   fclose(fp);
+
   return size;
 }
 
@@ -75,15 +156,17 @@ static int parse_args(int argc, char *argv[]) {
     {"diff"     , required_argument, NULL, 'd'},
     {"port"     , required_argument, NULL, 'p'},
     {"help"     , no_argument      , NULL, 'h'},
+    {"elf_file" , required_argument, NULL, 'e'},
     {0          , 0                , NULL,  0 },
   };
   int o;
-  while ( (o = getopt_long(argc, argv, "-bhl:d:p:", table, NULL)) != -1) {
+  while ( (o = getopt_long(argc, argv, "-bhl:d:p:e:", table, NULL)) != -1) {
     switch (o) {
       case 'b': sdb_set_batch_mode(); break;
       case 'p': sscanf(optarg, "%d", &difftest_port); break;
       case 'l': log_file = optarg; break;
       case 'd': diff_so_file = optarg; break;
+      case 'e': elf_file = optarg; break;
       case 1: img_file = optarg; return 0;
       default:
         printf("Usage: %s [OPTION...] IMAGE [args]\n\n", argv[0]);
@@ -91,6 +174,7 @@ static int parse_args(int argc, char *argv[]) {
         printf("\t-l,--log=FILE           output log to FILE\n");
         printf("\t-d,--diff=REF_SO        run DiffTest with reference REF_SO\n");
         printf("\t-p,--port=PORT          run DiffTest with port PORT\n");
+        printf("\t-e,--elf_file=FILE      used by ftrace\n");
         printf("\n");
         exit(0);
     }
@@ -134,6 +218,8 @@ void init_monitor(int argc, char *argv[]) {
     MUXDEF(CONFIG_ISA_riscv32, "riscv32",
     MUXDEF(CONFIG_ISA_riscv64, "riscv64", "bad")))) "-pc-linux-gnu"
   ));
+
+  IFDEF(CONFIG_ITRACE_FUNC, init_ftrace(elf_file));
 
   /* Display welcome message. */
   welcome();

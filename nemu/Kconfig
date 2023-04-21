@@ -151,6 +151,11 @@ config ITRACE_MEM
   bool "Trace memory access"
   default y
 
+config ITRACE_FUNC
+  depends on ITRACE
+  bool "Function call trace"
+  default y
+
 config DIFFTEST
   depends on TARGET_NATIVE_ELF
   bool "Enable differential testing"
