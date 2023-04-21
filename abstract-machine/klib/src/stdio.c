@@ -10,11 +10,112 @@ int printf(const char *fmt, ...) {
 }
 
 int vsprintf(char *out, const char *fmt, va_list ap) {
-  panic("Not implemented");
+  const char *p = out;
+  while (*fmt != '\0') {
+    if (*fmt == '%') {
+      fmt++;
+      switch (*fmt) {
+        case 'd': {
+          int x = va_arg(ap, int);
+          char buf[32];
+          int len = 0;
+          if (x < 0) {
+            *out = '-';
+            out++;
+            x = -x;
+          }
+          do {
+            buf[len++] = x % 10 + '0';
+            x /= 10;
+          } while (x > 0);
+          for (int i = len - 1; i >= 0; i--) {
+            *out = buf[i];
+            out++;
+          }
+          break;
+        }
+        case 's': {
+          char *s = va_arg(ap, char *);
+          while (*s != '\0') {
+            *out = *s;
+            out++;
+            s++;
+          }
+          break;
+        }
+        case 'c': {
+          char c = va_arg(ap, int);
+          *out = c;
+          out++;
+          break;
+        }
+        case 'p': {
+          void *p = va_arg(ap, void *);
+          char buf[32];
+          int len = 0;
+          do {
+            int x = (uintptr_t)p % 16;
+            if (x < 10) {
+              buf[len++] = x + '0';
+            } else {
+              buf[len++] = x - 10 + 'a';
+            }
+            p = (void *)((uintptr_t)p / 16);
+          } while ((uintptr_t)p > 0);
+          *out = '0';
+          out++;
+          *out = 'x';
+          out++;
+          for (int i = len - 1; i >= 0; i--) {
+            *out = buf[i];
+            out++;
+          }
+          break;
+        }
+        case 'x': {
+          int x = va_arg(ap, int);
+          char buf[32];
+          int len = 0;
+          do {
+            int y = x % 16;
+            if (y < 10) {
+              buf[len++] = y + '0';
+            } else {
+              buf[len++] = y - 10 + 'a';
+            }
+            x /= 16;
+          } while (x > 0);
+          for (int i = len - 1; i >= 0; i--) {
+            *out = buf[i];
+            out++;
+          }
+          break;
+        }
+        case '%': {
+          *out = '%';
+          out++;
+          break;
+        }
+        default: {
+          panic("Unknown format specifier");
+        }
+      }
+    } else {
+      *out = *fmt;
+      out++;
+    }
+    fmt++;
+  }
+  *out = '\0';
+  return out - p;
 }
 
 int sprintf(char *out, const char *fmt, ...) {
-  panic("Not implemented");
+  va_list ap;
+  va_start(ap, fmt);
+  int ret = vsprintf(out, fmt, ap);
+  va_end(ap);
+  return ret;
 }
 
 int snprintf(char *out, size_t n, const char *fmt, ...) {
