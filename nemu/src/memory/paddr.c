@@ -56,7 +56,27 @@ void init_mem() {
   Log("physical memory area [" FMT_PADDR ", " FMT_PADDR "]", PMEM_LEFT, PMEM_RIGHT);
 }
 
+static void itrace_mem_read(paddr_t addr, int len) {
+  if (unlikely(in_pmem(addr))) {
+    word_t data = host_read(guest_to_host(addr), len);
+    Log("read " FMT_WORD " from " FMT_PADDR, data, addr);
+  }
+}
+
+static void itrace_mem_write(paddr_t addr, int len, word_t data) {
+  if (unlikely(in_pmem(addr))) {
+    uint8_t *ptr = guest_to_host(addr);
+    switch (len) {
+      case 1: Log("0x%08x -> 0x%02x", addr, data); *ptr = data; break;
+      case 2: Log("0x%08x -> 0x%04x", addr, data); *(uint16_t *)ptr = data; break;
+      case 4: Log("0x%08x -> 0x%08x", addr, data); *(uint32_t *)ptr = data; break;
+      default: panic("invalid length");
+    }
+  }
+}
+
 word_t paddr_read(paddr_t addr, int len) {
+  IFDEF(CONFIG_ITRACE_MEM, itrace_mem_read(addr, len));
   if (likely(in_pmem(addr))) return pmem_read(addr, len);
   IFDEF(CONFIG_DEVICE, return mmio_read(addr, len));
   out_of_bound(addr);
@@ -64,6 +84,7 @@ word_t paddr_read(paddr_t addr, int len) {
 }
 
 void paddr_write(paddr_t addr, int len, word_t data) {
+  IFDEF(CONFIG_ITRACE_MEM, itrace_mem_write(addr, len, data));
   if (likely(in_pmem(addr))) { pmem_write(addr, len, data); return; }
   IFDEF(CONFIG_DEVICE, mmio_write(addr, len, data); return);
   out_of_bound(addr);
