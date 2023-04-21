@@ -98,7 +98,7 @@ void call_ftrace(uint32_t inst_addr, uint32_t next_addr) {
   if (func_name) {
     char buf[256] = {0};
     sprintf(buf, "%x:", inst_addr);
-    for (int i = 0; i < call_layer && i < 30; i++) {
+    for (int i = 0; i < call_layer; i++) {
       strcat(buf, " ");
     }
     char buf2[256] = {0};
@@ -112,7 +112,7 @@ void ret_ftrace(uint32_t inst_addr, uint32_t next_addr) {
   if (func_name) {
     char buf[256] = {0};
     sprintf(buf, "%x:", inst_addr);
-    for (int i = 0; i < call_layer && i < 30; i++) {
+    for (int i = 0; i < call_layer; i++) {
       strcat(buf, " ");
     }
     char buf2[256] = {0};
