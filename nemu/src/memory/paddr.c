@@ -56,22 +56,23 @@ void init_mem() {
   Log("physical memory area [" FMT_PADDR ", " FMT_PADDR "]", PMEM_LEFT, PMEM_RIGHT);
 }
 
-static void itrace_mem_read(paddr_t addr, int len) {
-  if (unlikely(in_pmem(addr))) {
-    word_t data = host_read(guest_to_host(addr), len);
-    Log("read " FMT_WORD " from " FMT_PADDR, data, addr);
-  }
+inline static void itrace_mem_read(paddr_t addr, int len) {
+    Log("addr : 0x%08x len : 0x%08x", addr, len);
 }
 
-static void itrace_mem_write(paddr_t addr, int len, word_t data) {
-  if (unlikely(in_pmem(addr))) {
-    uint8_t *ptr = guest_to_host(addr);
-    switch (len) {
-      case 1: Log("0x%08x -> 0x%02x", addr, data); *ptr = data; break;
-      case 2: Log("0x%08x -> 0x%04x", addr, data); *(uint16_t *)ptr = data; break;
-      case 4: Log("0x%08x -> 0x%08x", addr, data); *(uint32_t *)ptr = data; break;
-      default: panic("invalid length");
-    }
+inline static void itrace_mem_write(paddr_t addr, int len, word_t data) {
+  switch (len) {
+  case 1:
+    Log("0x%08x -> 0x%02x", addr, data);
+    break;
+  case 2:
+    Log("0x%08x -> 0x%04x", addr, data);
+    break;
+  case 4:
+    Log("0x%08x -> 0x%08x", addr, data);
+    break;
+  default:
+    panic("invalid length");
   }
 }
 
