@@ -102,34 +102,58 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
           fmt++;
           char c = *(fmt);
 
-          if (c != 'd') {
+          if (c == 'd') {
+            int x = va_arg(ap, int);
+            char buf[32] = {0};
+            int len = 0;
+            bool is_neg = false;
+            if (x < 0) {
+              is_neg = true;
+              x = -x;
+            }
+            do {
+              buf[len++] = x % 10 + '0';
+              x /= 10;
+            } while (x > 0);
+            if (is_neg) {
+              buf[len++] = '-';
+            }
+            // 输出补全的0
+            while (len < width) {
+              buf[len++] = '0';
+            }
+            for (int i = len - 1; i >= 0; i--) {
+              *out = buf[i];
+              out++;
+            }
+            break;
+          } else if (c == 'x') {
+            int x = va_arg(ap, int);
+            char buf[32] = {0};
+            int len = 0;
+            do {
+              int y = x % 16;
+              if (y < 10) {
+                buf[len++] = y + '0';
+              } else {
+                buf[len++] = y - 10 + 'a';
+              }
+              x /= 16;
+            } while (x > 0);
+            // 输出补全的0
+            while (len < width) {
+              buf[len++] = '0';
+            }
+            for (int i = len - 1; i >= 0; i--) {
+              *out = buf[i];
+              out++;
+            }
+            break;
+          } else {
             printf("Unknown format specifier : %c\n", *fmt);
             panic("Unknown format specifier");
           }
-          int x = va_arg(ap, int);
-          char buf[32] = {0};
-          int len = 0;
-          bool is_neg = false;
-          if (x < 0) {
-            is_neg = true;
-            x = -x;
-          }
-          do {
-            buf[len++] = x % 10 + '0';
-            x /= 10;
-          } while (x > 0);
-          if (is_neg) {
-            buf[len++] = '-';
-          }
-          // 输出补全的0
-          while (len < width) {
-            buf[len++] = '0';
-          }
-          for (int i = len - 1; i >= 0; i--) {
-            *out = buf[i];
-            out++;
-          }
-          break;
+          
         }
         case 'u': {
           unsigned int x = va_arg(ap, unsigned int);
