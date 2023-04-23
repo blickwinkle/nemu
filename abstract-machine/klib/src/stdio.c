@@ -98,6 +98,11 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
         case '0': {
           fmt++;
           int width = *fmt - '0';
+          char c = *(fmt + 1);
+          if (c != 'd') {
+            printf("Unknown format specifier : %c\n", *fmt);
+            panic("Unknown format specifier");
+          }
           int x = va_arg(ap, int);
           char buf[32];
           int len = 0;
