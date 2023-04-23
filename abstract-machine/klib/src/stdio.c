@@ -131,6 +131,20 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
           }
           break;
         }
+        case 'u': {
+          unsigned int x = va_arg(ap, unsigned int);
+          char buf[32];
+          int len = 0;
+          do {
+            buf[len++] = x % 10 + '0';
+            x /= 10;
+          } while (x > 0);
+          for (int i = len - 1; i >= 0; i--) {
+            *out = buf[i];
+            out++;
+          }
+          break;
+        }
         default: {
           printf("Unknown format specifier : %c\n", *fmt);
           panic("Unknown format specifier");
