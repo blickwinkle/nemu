@@ -73,7 +73,7 @@ static void exec_once(Decode *s, vaddr_t pc) {
 }
 
 static void execute(uint64_t n) {
-  Decode s = { .logbufs = { .size = Ring_Buffer_Size, .idx = 0 }};
+  Decode s IFDEF(CONFIG_ITRACE, = { .logbufs = { .size = Ring_Buffer_Size, .idx = 0 }});
   for (;n > 0; n --) {
     exec_once(&s, cpu.pc);
     g_nr_guest_inst ++;
