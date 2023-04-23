@@ -94,7 +94,7 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
           out++;
           break;
         }
-        //处理类似%02d这种格式
+        //处理类似%02d这种格式，如果输出的整型数不足两位，左侧用0补齐。需要能 处理任意位数的情况。
         case '0': {
           fmt++;
           int x = va_arg(ap, int);
@@ -109,11 +109,6 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
             buf[len++] = x % 10 + '0';
             x /= 10;
           } while (x > 0);
-          while (len < *fmt - '0') {
-            *out = '0';
-            out++;
-            len++;
-          }
           for (int i = len - 1; i >= 0; i--) {
             *out = buf[i];
             out++;
