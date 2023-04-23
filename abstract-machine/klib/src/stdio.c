@@ -94,6 +94,32 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
           out++;
           break;
         }
+        //处理类似%02d这种格式
+        case '0': {
+          fmt++;
+          int x = va_arg(ap, int);
+          char buf[32];
+          int len = 0;
+          if (x < 0) {
+            *out = '-';
+            out++;
+            x = -x;
+          }
+          do {
+            buf[len++] = x % 10 + '0';
+            x /= 10;
+          } while (x > 0);
+          while (len < *fmt - '0') {
+            *out = '0';
+            out++;
+            len++;
+          }
+          for (int i = len - 1; i >= 0; i--) {
+            *out = buf[i];
+            out++;
+          }
+          break;
+        }
         default: {
           printf("Unknown format specifier : %c\n", *fmt);
           panic("Unknown format specifier");
