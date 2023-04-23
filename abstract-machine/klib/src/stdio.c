@@ -129,7 +129,6 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
             *out = buf[i];
             out++;
           }
-          printf(buf);
           break;
         }
         default: {
