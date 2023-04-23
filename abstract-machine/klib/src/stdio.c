@@ -2,6 +2,7 @@
 #include <klib.h>
 #include <klib-macros.h>
 #include <stdarg.h>
+#include <stdint.h>
 
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
@@ -97,8 +98,10 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
         //处理类似%02d这种格式，如果输出的整型数不足两位，左侧用0补齐。需要能 处理任意位数的情况。
         case '0': {
           fmt++;
-          int width = *fmt - '0';
-          char c = *(fmt + 1);
+          uint8_t width = *fmt - '0';
+          fmt++;
+          char c = *(fmt);
+
           if (c != 'd') {
             printf("Unknown format specifier : %c\n", *fmt);
             panic("Unknown format specifier");
