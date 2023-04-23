@@ -115,7 +115,7 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
             x = -x;
           }
           do {
-            buf[len++] = x % 10;
+            buf[len++] = x % 10 + '0';
             x /= 10;
           } while (x > 0);
           if (is_neg) {
