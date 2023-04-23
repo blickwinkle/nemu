@@ -9,6 +9,7 @@
 
 
 int vsprintf(char *out, const char *fmt, va_list ap) {
+  const char *old_fmt = fmt;
   const char *p = out;
   while (*fmt != '\0') {
     if (*fmt == '%') {
@@ -101,7 +102,11 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
           uint8_t width = *fmt - '0';
           fmt++;
           char c = *(fmt);
-
+          while (c >= '0' && c <= '9') {
+            width = width * 10 + c - '0';
+            fmt++;
+            c = *(fmt);
+          }
           if (c == 'd') {
             int x = va_arg(ap, int);
             char buf[32] = {0};
@@ -151,6 +156,7 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
             break;
           } else {
             printf("Unknown format specifier : %c\n", *fmt);
+            printf("%s", old_fmt);
             panic("Unknown format specifier");
           }
           
@@ -171,6 +177,7 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
         }
         default: {
           printf("Unknown format specifier : %c\n", *fmt);
+          printf("%s", old_fmt);
           panic("Unknown format specifier");
         }
       }
