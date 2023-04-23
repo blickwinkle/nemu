@@ -95,6 +95,7 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
           break;
         }
         default: {
+          printf("Unknown format specifier : %c\n", *fmt);
           panic("Unknown format specifier");
         }
       }
