@@ -107,7 +107,7 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
             panic("Unknown format specifier");
           }
           int x = va_arg(ap, int);
-          char buf[32];
+          char buf[32] = {0};
           int len = 0;
           bool is_neg = false;
           if (x < 0) {
@@ -129,6 +129,7 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
             *out = buf[i];
             out++;
           }
+          printf(buf);
           break;
         }
         default: {
