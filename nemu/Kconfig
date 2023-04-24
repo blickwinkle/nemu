@@ -156,6 +156,11 @@ config ITRACE_FUNC
   bool "Function call trace"
   default y
 
+config DTRACE
+  depends on TRACE
+  bool "Device access trace"
+  default y
+
 config DIFFTEST
   depends on TARGET_NATIVE_ELF
   bool "Enable differential testing"
