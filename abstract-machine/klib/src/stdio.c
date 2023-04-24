@@ -266,7 +266,7 @@ int sprintf(char *out, const char *fmt, ...) {
 int printf(const char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
-  char buf[1024];
+  char buf[1024 * 16];
   int ret = vsprintf(buf, fmt, ap);
   va_end(ap);
   putstr(buf);
