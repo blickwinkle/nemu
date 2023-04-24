@@ -24,13 +24,67 @@ enum {
   reg_sbuf_size,
   reg_init,
   reg_count,
+  ret_mutex,
   nr_reg
 };
 
 static uint8_t *sbuf = NULL;
 static uint32_t *audio_base = NULL;
 
+static bool audio_init = false;
+
+SDLCALL void SDL_Callback(void *userdata, uint8_t *stream, int len) {
+  
+  int copy_len = 0;
+  while (audio_base[ret_mutex] == 1) {
+    SDL_Delay(1);
+  }
+  audio_base[ret_mutex] = 1;
+
+  copy_len = len > audio_base[reg_count] ? audio_base[reg_count] : len;
+  if (copy_len < len) {
+    memset(stream + copy_len, 0, len - copy_len);
+  }
+  memcpy(stream, sbuf, copy_len);
+  audio_base[reg_count] -= copy_len;
+  audio_base[ret_mutex] = 0;
+}
+
+static void _init_audio() {
+  SDL_AudioSpec s = {};
+  s.format = AUDIO_S16SYS; // 假设系统中音频数据的格式总是使用16位有符号数来表示
+  s.userdata = NULL; // 不使用
+  s.callback = SDL_Callback;
+  s.freq = audio_base[reg_freq];
+  s.channels = audio_base[reg_channels];
+  s.samples = audio_base[reg_samples];
+  SDL_InitSubSystem(SDL_INIT_AUDIO);
+  SDL_OpenAudio(&s, NULL);
+  SDL_PauseAudio(0);
+
+  audio_base[reg_sbuf_size] = CONFIG_SB_SIZE;
+  audio_init = true;
+}
+
 static void audio_io_handler(uint32_t offset, int len, bool is_write) {
+  if (is_write) {
+    switch (offset) {
+      case reg_init:
+        if (!audio_init && audio_base[reg_init]) {
+          _init_audio();
+        }
+        break;
+      default:
+        break;
+    }
+  } else {
+    switch (offset) {
+      case reg_sbuf_size:
+        break;
+      default:
+        break;
+    }
+  }
 }
 
 void init_audio() {
@@ -41,7 +95,7 @@ void init_audio() {
 #else
   add_mmio_map("audio", CONFIG_AUDIO_CTL_MMIO, audio_base, space_size, audio_io_handler);
 #endif
-
+  audio_base[ret_mutex] = 0;
   sbuf = (uint8_t *)new_space(CONFIG_SB_SIZE);
   add_mmio_map("audio-sbuf", CONFIG_SB_ADDR, sbuf, CONFIG_SB_SIZE, NULL);
 }
