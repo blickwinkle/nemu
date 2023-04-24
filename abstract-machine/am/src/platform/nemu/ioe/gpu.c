@@ -1,12 +1,15 @@
+#include "riscv/riscv.h"
 #include <am.h>
 #include <nemu.h>
 
 #define SYNC_ADDR (VGACTL_ADDR + 4)
 
+static int w = 0, h = 0;
+
 void __am_gpu_init() {
   int i;
-  int w = 800; // TODO: get the correct width
-  int h = 600; // TODO: get the correct height
+  w = inl(VGACTL_ADDR) >> 16; // TODO: get the correct width
+  h = inl(VGACTL_ADDR) & 0xffff; // TODO: get the correct height
   uint32_t *fb = (uint32_t *)(uintptr_t)FB_ADDR;
   for (i = 0; i < w * h; i++)
     fb[i] = i;
@@ -16,7 +19,7 @@ void __am_gpu_init() {
 void  __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
   *cfg = (AM_GPU_CONFIG_T) {
     .present = true, .has_accel = false,
-    .width = 800, .height = 600,
+    .width = w, .height = h,
     .vmemsz = 0
   };
 }
