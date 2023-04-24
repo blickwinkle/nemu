@@ -6,6 +6,7 @@
 
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
+#define BUF_SIZE 1024
 
 
 int vsprintf(char *out, const char *fmt, va_list ap) {
@@ -17,7 +18,7 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
       switch (*fmt) {
         case 'd': {
           int x = va_arg(ap, int);
-          char buf[32];
+          char buf[BUF_SIZE];
           int len = 0;
           if (x < 0) {
             *out = '-';
@@ -51,7 +52,7 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
         }
         case 'p': {
           void *p = va_arg(ap, void *);
-          char buf[32];
+          char buf[BUF_SIZE];
           int len = 0;
           do {
             int x = (uintptr_t)p % 16;
@@ -74,7 +75,7 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
         }
         case 'x': {
           int x = va_arg(ap, int);
-          char buf[32];
+          char buf[BUF_SIZE];
           int len = 0;
           do {
             int y = x % 16;
@@ -109,7 +110,7 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
           }
           if (c == 'd') {
             int x = va_arg(ap, int);
-            char buf[32] = {0};
+            char buf[BUF_SIZE] = {0};
             int len = 0;
             bool is_neg = false;
             if (x < 0) {
@@ -134,7 +135,7 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
             break;
           } else if (c == 'x') {
             int x = va_arg(ap, int);
-            char buf[32] = {0};
+            char buf[BUF_SIZE] = {0};
             int len = 0;
             do {
               int y = x % 16;
@@ -163,7 +164,7 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
         }
         case 'u': {
           unsigned int x = va_arg(ap, unsigned int);
-          char buf[32];
+          char buf[BUF_SIZE];
           int len = 0;
           do {
             buf[len++] = x % 10 + '0';
@@ -188,7 +189,7 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
             }
             if (c == 'd') {
               int x = va_arg(ap, int);
-              char buf[32] = {0};
+              char buf[BUF_SIZE] = {0};
               int len = 0;
               bool is_neg = false;
               if (x < 0) {
@@ -213,7 +214,7 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
               break;
             } else if (c == 'x') {
               int x = va_arg(ap, int);
-              char buf[32] = {0};
+              char buf[BUF_SIZE] = {0};
               int len = 0;
               do {
                 int y = x % 16;
