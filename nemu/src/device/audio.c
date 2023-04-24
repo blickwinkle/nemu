@@ -65,13 +65,14 @@ static void _init_audio() {
   SDL_PauseAudio(0);
 
   audio_base[reg_sbuf_size] = CONFIG_SB_SIZE;
+  audio_base[reg_count] = 0;
   audio_init = true;
 }
 
 static void audio_io_handler(uint32_t offset, int len, bool is_write) {
   if (is_write) {
     switch (offset) {
-      case reg_init:
+      case reg_init * sizeof(uint32_t):
         if (!audio_init && audio_base[reg_init]) {
           _init_audio();
         }
