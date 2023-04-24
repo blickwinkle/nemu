@@ -9,16 +9,18 @@
 static int width = 0, height = 0;
 
 void __am_gpu_init() {
-  int i;
+  // int i;
   width = inl(VGACTL_ADDR) >> 16; // TODO: get the correct width
   height = inl(VGACTL_ADDR) & 0xffff; // TODO: get the correct height
-  uint32_t *fb = (uint32_t *)(uintptr_t)FB_ADDR;
-  for (i = 0; i < width * height; i++)
-    fb[i] = i;
-  outl(SYNC_ADDR, 1);
+  // uint32_t *fb = (uint32_t *)(uintptr_t)FB_ADDR;
+  // for (i = 0; i < width * height; i++)
+  //   fb[i] = i;
+  // outl(SYNC_ADDR, 1);
 }
 
 void  __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
+  width = inl(VGACTL_ADDR) >> 16; // TODO: get the correct width
+  height = inl(VGACTL_ADDR) & 0xffff; // TODO: get the correct height
   *cfg = (AM_GPU_CONFIG_T) {
     .present = true, .has_accel = false,
     .width = width, .height = height,
