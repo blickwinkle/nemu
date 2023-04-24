@@ -35,16 +35,15 @@ static uint32_t *audio_base = NULL;
 static int tail = 0;
 
 SDLCALL void SDL_Callback(void *userdata, uint8_t *stream, int len) {
-  
   int copy_len = 0;
   copy_len = len > audio_base[reg_count] ? audio_base[reg_count] : len;
   if (copy_len < len) {
     memset(stream + copy_len, 0, len - copy_len);
   }
-  if (copy_len + tail > audio_base[reg_sbuf_size]) {
-    memcpy(stream, sbuf + tail, audio_base[reg_sbuf_size] - tail);
-    memcpy(stream + audio_base[reg_sbuf_size] - tail, sbuf, copy_len - (audio_base[reg_sbuf_size] - tail));
-    tail = copy_len - (audio_base[reg_sbuf_size] - tail);
+  if (copy_len + tail > CONFIG_SB_SIZE) {
+    memcpy(stream, sbuf + tail, CONFIG_SB_SIZE - tail);
+    memcpy(stream + CONFIG_SB_SIZE - tail, sbuf, copy_len - (CONFIG_SB_SIZE - tail));
+    tail = copy_len - (CONFIG_SB_SIZE - tail);
   } else {
     memcpy(stream, sbuf + tail, copy_len);
     tail += copy_len;
