@@ -51,17 +51,19 @@ static int last_write = 0;
 
 void __am_audio_play(AM_AUDIO_PLAY_T *ctl) {
   int count;
+  int i, write_count = ctl->buf.end - ctl->buf.start;
   while (1) {
     count = inl(AUDIO_COUNT_ADDR);
-    if (count + (ctl->buf.end - ctl->buf.start) <= sbuf_size) {
+    if (count + write_count <= sbuf_size) {
       break;
     }
   }
-  int i, write_count = ctl->buf.end - ctl->buf.start;
+  
   for (i = 0; i < write_count; i++) {
+    
+    outb(AUDIO_SBUF_ADDR + last_write, ((uint8_t *)(ctl->buf.start))[i]);
     last_write += 1;
     last_write %= sbuf_size;
-    outb(AUDIO_SBUF_ADDR + last_write, ((uint8_t *)(ctl->buf.start))[i]);
   }
   outl(AUDIO_COUNT_ADDR, count + write_count);
 }
