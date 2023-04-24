@@ -24,7 +24,6 @@ enum {
   reg_sbuf_size,
   reg_init,
   reg_count,
-  ret_mutex,
   nr_reg
 };
 
@@ -33,21 +32,24 @@ static uint32_t *audio_base = NULL;
 
 static bool audio_init = false;
 
+static int tail = 0;
+
 SDLCALL void SDL_Callback(void *userdata, uint8_t *stream, int len) {
   
   int copy_len = 0;
-  while (audio_base[ret_mutex] == 1) {
-    SDL_Delay(1);
-  }
-  audio_base[ret_mutex] = 1;
-
   copy_len = len > audio_base[reg_count] ? audio_base[reg_count] : len;
   if (copy_len < len) {
     memset(stream + copy_len, 0, len - copy_len);
   }
-  memcpy(stream, sbuf, copy_len);
+  if (copy_len + tail > audio_base[reg_sbuf_size]) {
+    memcpy(stream, sbuf + tail, audio_base[reg_sbuf_size] - tail);
+    memcpy(stream + audio_base[reg_sbuf_size] - tail, sbuf, copy_len - (audio_base[reg_sbuf_size] - tail));
+    tail = copy_len - (audio_base[reg_sbuf_size] - tail);
+  } else {
+    memcpy(stream, sbuf + tail, copy_len);
+    tail += copy_len;
+  }
   audio_base[reg_count] -= copy_len;
-  audio_base[ret_mutex] = 0;
 }
 
 static void _init_audio() {
@@ -95,7 +97,7 @@ void init_audio() {
 #else
   add_mmio_map("audio", CONFIG_AUDIO_CTL_MMIO, audio_base, space_size, audio_io_handler);
 #endif
-  audio_base[ret_mutex] = 0;
+  tail = 0;
   sbuf = (uint8_t *)new_space(CONFIG_SB_SIZE);
   add_mmio_map("audio-sbuf", CONFIG_SB_ADDR, sbuf, CONFIG_SB_SIZE, NULL);
 }

@@ -47,6 +47,8 @@ void __am_audio_status(AM_AUDIO_STATUS_T *stat) {
   stat->count = inl(AUDIO_COUNT_ADDR);
 }
 
+static int last_write = 0;
+
 void __am_audio_play(AM_AUDIO_PLAY_T *ctl) {
   int count;
   while (1) {
@@ -55,13 +57,11 @@ void __am_audio_play(AM_AUDIO_PLAY_T *ctl) {
       break;
     }
   }
-  while (inl(AUDIO_MUTEX_ADDR)) {}
-  outl(AUDIO_MUTEX_ADDR, 1);
-  count = inl(AUDIO_COUNT_ADDR);
-  int i;
-  for (i = 0; i < ctl->buf.end - ctl->buf.start; i++) {
-    outb(AUDIO_SBUF_ADDR + count + i, ((uint8_t *)(ctl->buf.start))[i]);
+  int i, write_count = ctl->buf.end - ctl->buf.start;
+  for (i = 0; i < write_count; i++) {
+    last_write += 1;
+    last_write %= sbuf_size;
+    outb(AUDIO_SBUF_ADDR + last_write, ((uint8_t *)(ctl->buf.start))[i]);
   }
-  outl(AUDIO_COUNT_ADDR, count + (ctl->buf.end - ctl->buf.start));
-  outl(AUDIO_MUTEX_ADDR, 0);
+  outl(AUDIO_COUNT_ADDR, count + write_count);
 }
