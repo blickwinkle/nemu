@@ -36,35 +36,36 @@ static int tail = 0;
 
 SDLCALL void SDL_Callback(void *userdata, uint8_t *stream, int len) {
   
-  // int copy_len = 0;
-  // copy_len = len > audio_base[reg_count] ? audio_base[reg_count] : len;
-  // if (copy_len < len) {
-  //   memset(stream + copy_len, 0, len - copy_len);
-  // }
-  // if (copy_len + tail > audio_base[reg_sbuf_size]) {
-  //   memcpy(stream, sbuf + tail, audio_base[reg_sbuf_size] - tail);
-  //   memcpy(stream + audio_base[reg_sbuf_size] - tail, sbuf, copy_len - (audio_base[reg_sbuf_size] - tail));
-  //   tail = copy_len - (audio_base[reg_sbuf_size] - tail);
-  // } else {
-  //   memcpy(stream, sbuf + tail, copy_len);
-  //   tail += copy_len;
-  // }
-  // audio_base[reg_count] -= copy_len;
-  int nread = len;
-  int count = audio_base[reg_count];
-  if (count < len) nread = count;
-
-  if (nread + tail < CONFIG_SB_SIZE) {
-    memcpy(stream, sbuf + tail, nread);
-    tail += nread;
-  } else {
-    int first_cpy_len = CONFIG_SB_SIZE - tail;
-    memcpy(stream, sbuf + tail, first_cpy_len);
-    memcpy(stream + first_cpy_len, sbuf, nread - first_cpy_len);
-    tail = nread - first_cpy_len;
+  int copy_len = 0;
+  copy_len = len > audio_base[reg_count] ? audio_base[reg_count] : len;
+  if (copy_len < len) {
+    memset(stream + copy_len, 0, len - copy_len);
   }
-  audio_base[reg_count] -= nread;
-  if (len > nread) memset(stream + nread, 0, len - nread);
+  if (copy_len + tail > audio_base[reg_sbuf_size]) {
+    memcpy(stream, sbuf + tail, audio_base[reg_sbuf_size] - tail);
+    memcpy(stream + audio_base[reg_sbuf_size] - tail, sbuf, copy_len - (audio_base[reg_sbuf_size] - tail));
+    tail = copy_len - (audio_base[reg_sbuf_size] - tail);
+  } else {
+    memcpy(stream, sbuf + tail, copy_len);
+    tail += copy_len;
+  }
+  audio_base[reg_count] -= copy_len;
+  
+  // int nread = len;
+  // int count = audio_base[reg_count];
+  // if (count < len) nread = count;
+
+  // if (nread + tail < CONFIG_SB_SIZE) {
+  //   memcpy(stream, sbuf + tail, nread);
+  //   tail += nread;
+  // } else {
+  //   int first_cpy_len = CONFIG_SB_SIZE - tail;
+  //   memcpy(stream, sbuf + tail, first_cpy_len);
+  //   memcpy(stream + first_cpy_len, sbuf, nread - first_cpy_len);
+  //   tail = nread - first_cpy_len;
+  // }
+  // audio_base[reg_count] -= nread;
+  // if (len > nread) memset(stream + nread, 0, len - nread);
 }
 
 // static void _init_audio() {
