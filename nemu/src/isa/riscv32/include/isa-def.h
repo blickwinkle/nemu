@@ -22,10 +22,10 @@ typedef struct {
   word_t gpr[32];
   vaddr_t pc;
   
-  vaddr_t stvec;
-  vaddr_t scause;
-  vaddr_t sepc;
-  vaddr_t sscratch;
+  vaddr_t mtvec;
+  vaddr_t mstatus;
+  vaddr_t mepc;
+  vaddr_t mcause;
 } riscv32_CPU_state;
 
 // decode

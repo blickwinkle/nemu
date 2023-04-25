@@ -14,6 +14,7 @@
 ***************************************************************************************/
 
 #include "common.h"
+#include "isa.h"
 #include "local-include/reg.h"
 #include "macro.h"
 #include <cpu/cpu.h>
@@ -91,9 +92,10 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 000 ????? 00000 11", lb     , I, R(dest) = SEXT(Mr(src1 + imm, 1), 8));
   INSTPAT("??????? ????? ????? 110 ????? 00100 11", ori    , I, R(dest) = src1 | imm);
   
-  INSTPAT("0011000 00101 ????? 010 ????? 11100 11", csrrs mtevc  , I, word_t t = cpu.stvec; cpu.stvec = t | src1; R(dest) = t;); // csrrs t = CSRs[csr]; CSRs[csr] = t | x[rs1]; x[rd] = t
-  INSTPAT("0011000 00101 ????? 001 ????? 11100 11", csrrw mtevc  , I, word_t t = cpu.stvec; cpu.stvec = src1; R(dest) = t;); // csrrs t = CSRs[csr]; CSRs[csr] = t | x[rs1]; x[rd] = t
+  INSTPAT("0011000 00101 ????? 010 ????? 11100 11", csrrs mtevc  , I, word_t t = cpu.mtvec; cpu.mtvec = t | src1; R(dest) = t;); // csrrs t = CSRs[csr]; CSRs[csr] = t | x[rs1]; x[rd] = t
+  INSTPAT("0011000 00101 ????? 001 ????? 11100 11", csrrw mtevc  , I, word_t t = cpu.mtvec; cpu.mtvec = src1; R(dest) = t;); // csrrs t = CSRs[csr]; CSRs[csr] = t | x[rs1]; x[rd] = t
 
+  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , I, s->dnpc = isa_raise_intr(CALL_FROM_USER, s->pc));
   // U type
   INSTPAT("??????? ????? ????? ??? ????? 01101 11", lui    , U, R(dest) = imm);
   INSTPAT("??????? ????? ????? ??? ????? 00101 11", auipc  , U, R(dest) = s->pc + imm);
@@ -198,7 +200,7 @@ static int decode_exec(Decode *s) {
   
   INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10))); // R(10) is $a0
   // // copilot
-  // INSTPAT("0000000 00001 00000 000 00000 11101 11", ecall  , N, NEMUTRAP(s->pc, R(17))); // R(17) is $a7
+  //  // R(17) is $a7
   // INSTPAT("0000000 00001 00000 000 00000 11110 11", mret   , N, NEMUTRAP(s->pc, R(18))); // R(18) is $a8
   // INSTPAT("0000000 00001 00000 000 00000 11111 11", uret   , N, NEMUTRAP(s->pc, R(19))); // R(19) is $a9
 
