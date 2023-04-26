@@ -4,12 +4,16 @@
 
 static Context* (*user_handler)(Event, Context*) = NULL;
 
+
+
 Context* __am_irq_handle(Context *c) {
   printf("Got interrupt: %x, status: %x, mepc: %x\n", c->mcause, c->mstatus, c->mepc);
   
   if (user_handler) {
     Event ev = {0};
     switch (c->mcause) {
+      case CAUSE_MACHINE_ECALL: ev.event = EVENT_YIELD; break;
+
       default: ev.event = EVENT_ERROR; break;
     }
 
