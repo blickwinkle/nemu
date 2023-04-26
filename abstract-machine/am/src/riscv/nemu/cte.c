@@ -5,7 +5,7 @@
 static Context* (*user_handler)(Event, Context*) = NULL;
 
 Context* __am_irq_handle(Context *c) {
-  printf("Got interrupt: %lu, status: %lu, mepc: %lu\n", c->mcause, c->mstatus, c->mepc);
+  printf("Got interrupt: %x, status: %x, mepc: %x\n", c->mcause, c->mstatus, c->mepc);
   
   if (user_handler) {
     Event ev = {0};
