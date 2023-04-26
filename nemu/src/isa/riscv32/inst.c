@@ -49,7 +49,7 @@ static inline word_t* csr_decode(uint32_t csr) {
     case CSR_MTVEC: return &cpu.mtvec;
     case CSR_MEPC: return &cpu.mepc;
     case CSR_MCAUSE: return &cpu.mcause;
-    case CSR_MSTATUS: return &cpu.mstatus;
+    case CSR_MSTATUS: return &cpu.mstatus.val;
     default: panic("unimplemented CSR 0x%x", csr);
   }
   return NULL;
@@ -114,7 +114,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs  , I, word_t t; csrrw(&t, NULL, imm); R(dest) = t; t |= src1; csrrw(NULL, &t, imm)); // csrrs t = CSRs[csr]; CSRs[csr] = t | x[rs1]; x[rd] = t
   INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrw  , I, csrrw(&R(dest), &src1, imm)); // csrrs t = CSRs[csr]; CSRs[csr] = t | x[rs1]; x[rd] = t
 
-  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , I, s->dnpc = isa_raise_intr(CAUSE_MACHINE_ECALL, s->pc));
+  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , I, s->dnpc = isa_raise_intr(CAUSE_MACHINE_ECALL, s->pc); IFDEF(CONFIG_ITRACE_FUNC, call_ftrace(s->pc, s->dnpc)));
   // U type
   INSTPAT("??????? ????? ????? ??? ????? 01101 11", lui    , U, R(dest) = imm);
   INSTPAT("??????? ????? ????? ??? ????? 00101 11", auipc  , U, R(dest) = s->pc + imm);
@@ -140,6 +140,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("0000001 ????? ????? 101 ????? 01100 11", divu   , R, R(dest) = (word_t)src1 / (word_t)src2);
   INSTPAT("0000001 ????? ????? 111 ????? 01100 11", remu   , R, R(dest) = (word_t)src1 % (word_t)src2);
   INSTPAT("0000001 ????? ????? 011 ????? 01100 11", mulhu  , R, R(dest) = (uint64_t)src1 * (uint64_t)src2 >> 32);
+  INSTPAT("0011000 00010 00000 000 00000 11110 11", mret   , R, csrrw(&s->dnpc, NULL, CSR_MEPC); cpu.mstatus.mie = cpu.mstatus.mpie; cpu.mstatus.mpie = 1; IFDEF(CONFIG_ITRACE_FUNC, ret_ftrace(s->pc, s->dnpc)));
   // B type
   INSTPAT("??????? ????? ????? 000 ????? 11000 11", beq    , B, if (src1 == src2) s->dnpc = s->pc + imm; );
   INSTPAT("??????? ????? ????? 001 ????? 11000 11", bne    , B, s->dnpc = (src1 != src2) ? s->pc + imm : s->snpc; );
@@ -220,7 +221,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10))); // R(10) is $a0
   // // copilot
   //  // R(17) is $a7
-  // INSTPAT("0000000 00001 00000 000 00000 11110 11", mret   , N, NEMUTRAP(s->pc, R(18))); // R(18) is $a8
+  //  // R(18) is $a8
   // INSTPAT("0000000 00001 00000 000 00000 11111 11", uret   , N, NEMUTRAP(s->pc, R(19))); // R(19) is $a9
 
 

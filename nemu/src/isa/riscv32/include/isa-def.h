@@ -46,7 +46,19 @@ typedef struct {
   vaddr_t mtvec;
   vaddr_t mcause;
   vaddr_t mepc;
-  vaddr_t mstatus;
+  union {
+    struct {
+      uint32_t uie : 1;
+      uint32_t mie : 1;
+      uint32_t pad0: 2;
+      uint32_t upie: 1;
+      uint32_t mpie: 1;
+      uint32_t pad1: 2;
+      uint32_t spp : 1;
+      uint32_t dontcare :21;
+    };
+    uint32_t val;
+  } mstatus;
 } riscv32_CPU_state;
 
 // decode
