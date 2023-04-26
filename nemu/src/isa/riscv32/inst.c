@@ -140,7 +140,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("0000001 ????? ????? 101 ????? 01100 11", divu   , R, R(dest) = (word_t)src1 / (word_t)src2);
   INSTPAT("0000001 ????? ????? 111 ????? 01100 11", remu   , R, R(dest) = (word_t)src1 % (word_t)src2);
   INSTPAT("0000001 ????? ????? 011 ????? 01100 11", mulhu  , R, R(dest) = (uint64_t)src1 * (uint64_t)src2 >> 32);
-  INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , R, csrrw(&s->dnpc, NULL, CSR_MEPC); IFDEF(CONFIG_ITRACE_FUNC, ret_ftrace(s->pc, s->dnpc)));
+  INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , R, csrrw(&s->dnpc, NULL, CSR_MEPC); s->dnpc += 4; IFDEF(CONFIG_ITRACE_FUNC, ret_ftrace(s->pc, s->dnpc)));
   // B type
   INSTPAT("??????? ????? ????? 000 ????? 11000 11", beq    , B, if (src1 == src2) s->dnpc = s->pc + imm; );
   INSTPAT("??????? ????? ????? 001 ????? 11000 11", bne    , B, s->dnpc = (src1 != src2) ? s->pc + imm : s->snpc; );
