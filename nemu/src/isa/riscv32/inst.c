@@ -14,6 +14,7 @@
 ***************************************************************************************/
 
 #include "common.h"
+#include "isa-def.h"
 #include "isa.h"
 #include "local-include/reg.h"
 #include "macro.h"
@@ -42,6 +43,24 @@ enum {
 #define immS() do { *imm = (SEXT(BITS(i, 31, 25), 7) << 5) | BITS(i, 11, 7); } while(0)
 #define immJ() do { *imm = (SEXT(BITS(i, 31, 31), 1) << 20) | (BITS(i, 30, 21) << 1) | (BITS(i, 20, 20) << 11) | (BITS(i, 19, 12) << 12); } while(0)
 #define immB() do { *imm = (SEXT(BITS(i, 31, 31), 1) << 12) | (BITS(i, 7, 7) << 11) | (BITS(i, 30, 25) << 5) | (BITS(i, 11, 8) << 1); } while(0)
+
+static inline word_t* csr_decode(uint32_t csr) {
+  switch (csr) {
+    case CSR_MTVEC: return &cpu.mtvec;
+    case CSR_MEPC: return &cpu.mepc;
+    case CSR_MCAUSE: return &cpu.mcause;
+    case CSR_MSTATUS: return &cpu.mstatus;
+    default: panic("unimplemented CSR 0x%x", csr);
+  }
+  return NULL;
+}
+
+static void csrrw(word_t *dest, const word_t *src, uint32_t csrid) {
+  word_t *csr = csr_decode(csrid);
+  word_t tmp = (src != NULL ? *src : 0);
+  if (dest != NULL) { *dest = *csr; }
+  if (src != NULL) { *csr = tmp; }
+}
 
 static void decode_operand(Decode *s, int *dest, word_t *src1, word_t *src2, word_t *imm, int type) {
   uint32_t i = s->isa.inst.val;
@@ -92,10 +111,10 @@ static int decode_exec(Decode *s) {
   INSTPAT("??????? ????? ????? 000 ????? 00000 11", lb     , I, R(dest) = SEXT(Mr(src1 + imm, 1), 8));
   INSTPAT("??????? ????? ????? 110 ????? 00100 11", ori    , I, R(dest) = src1 | imm);
   
-  INSTPAT("0011000 00101 ????? 010 ????? 11100 11", csrrs mtevc  , I, word_t t = cpu.mtvec; cpu.mtvec = t | src1; R(dest) = t;); // csrrs t = CSRs[csr]; CSRs[csr] = t | x[rs1]; x[rd] = t
-  INSTPAT("0011000 00101 ????? 001 ????? 11100 11", csrrw mtevc  , I, word_t t = cpu.mtvec; cpu.mtvec = src1; R(dest) = t;); // csrrs t = CSRs[csr]; CSRs[csr] = t | x[rs1]; x[rd] = t
+  INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs  , I, word_t t; csrrw(&t, NULL, imm); R(dest) = t; t |= src1; csrrw(NULL, &t, imm)); // csrrs t = CSRs[csr]; CSRs[csr] = t | x[rs1]; x[rd] = t
+  INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrw  , I, csrrw(&R(dest), &src1, imm)); // csrrs t = CSRs[csr]; CSRs[csr] = t | x[rs1]; x[rd] = t
 
-  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , I, s->dnpc = isa_raise_intr(CALL_FROM_USER, s->pc));
+  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , I, s->dnpc = isa_raise_intr(CAUSE_USER_ECALL, s->pc));
   // U type
   INSTPAT("??????? ????? ????? ??? ????? 01101 11", lui    , U, R(dest) = imm);
   INSTPAT("??????? ????? ????? ??? ????? 00101 11", auipc  , U, R(dest) = s->pc + imm);
