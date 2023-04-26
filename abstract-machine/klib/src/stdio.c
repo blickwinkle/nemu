@@ -74,7 +74,7 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
           break;
         }
         case 'x': {
-          int x = va_arg(ap, int);
+          uint32_t x = va_arg(ap, uint32_t);
           char buf[BUF_SIZE];
           int len = 0;
           do {
@@ -213,7 +213,7 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
               }
               break;
             } else if (c == 'x') {
-              int x = va_arg(ap, int);
+              uint32_t x = va_arg(ap, uint32_t);
               char buf[BUF_SIZE] = {0};
               int len = 0;
               do {
