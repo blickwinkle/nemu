@@ -7,8 +7,9 @@ static Context* (*user_handler)(Event, Context*) = NULL;
 
 
 Context* __am_irq_handle(Context *c) {
+  #ifdef DEBUG
   printf("Got interrupt: %x, status: %x, mepc: %x\n", c->mcause, c->mstatus, c->mepc);
-  
+  #endif
   if (user_handler) {
     Event ev = {0};
     switch (c->mcause) {
