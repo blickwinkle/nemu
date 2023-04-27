@@ -21,9 +21,9 @@ void do_syscall(Context *c) {
       syscalls[a[0]](c); break;
     default: panic("Unhandled syscall ID = %d", a[0]);
   }
-#ifdef CONFIG_STRACE
+
   Log("syscall ID = %d arguments: %x %x %x ret: %x", a[0], c->GPR2, c->GPR3, c->GPR4, c->GPRx);
-#endif
+
 }
 
 void sys_yield(Context *c) {
