@@ -3,6 +3,7 @@
 #include <sys/time.h>
 #include <assert.h>
 #include <time.h>
+#include "sys/unistd.h"
 #include "syscall.h"
 
 // helper macros
@@ -62,8 +63,9 @@ int _open(const char *path, int flags, mode_t mode) {
 }
 
 int _write(int fd, void *buf, size_t count) {
-  _exit(SYS_write);
-  return 0;
+  //_exit(SYS_write);
+  
+  return write(fd, buf, count);
 }
 
 void *_sbrk(intptr_t increment) {
