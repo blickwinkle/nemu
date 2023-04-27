@@ -30,6 +30,7 @@ static uintptr_t loader(PCB *pcb, const char *filename) {
   //你需要找出每一个需要加载的segment的Offset, VirtAddr, FileSiz和MemSiz这些参数. 其中相对文件偏移Offset指出相应segment的内容从ELF文件的第Offset字节开始, 在文件中的大小为FileSiz, 它需要被分配到以VirtAddr为首地址的虚拟内存位置, 在内存中它占用大小为MemSiz. 也就是说, 这个segment使用的内存就是[VirtAddr, VirtAddr + MemSiz)这一连续区间, 然后将segment的内容从ELF文件中读入到这一内存区间, 并将[VirtAddr + FileSiz, VirtAddr + MemSiz)对应的物理区间清零.
   // code:
   int fd = fs_open(filename, 0, 0);
+  fs_lseek(fd, 0, SEEK_SET);
   Elf_Ehdr elf;
   fs_read(fd, &elf, sizeof(Elf_Ehdr));
   // 检查ELF文件的魔数
