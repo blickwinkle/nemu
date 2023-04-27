@@ -4,10 +4,12 @@
 void sys_yield(Context *c);
 void sys_exit(Context *c);
 void sys_write(Context *c);
+void sys_brk(Context *c);
 static void ((*syscalls[])(Context *c)) = {
   [SYS_yield] = sys_yield,
   [SYS_exit] = sys_exit,
   [SYS_write] = sys_write,
+  [SYS_brk] = sys_brk,
 };
 
 void do_syscall(Context *c) {
@@ -18,6 +20,7 @@ void do_syscall(Context *c) {
     case SYS_yield: 
     case SYS_exit:
     case SYS_write:
+    case SYS_brk:
       syscalls[a[0]](c); break;
     default: panic("Unhandled syscall ID = %d", a[0]);
   }
@@ -48,4 +51,8 @@ void sys_write(Context *c) {
   } else {
     panic("sys_write: fd = %d", fd);
   }
+}
+
+void sys_brk(Context *c) {
+  c->GPRx = 0;
 }
