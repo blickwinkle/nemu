@@ -5,11 +5,20 @@ void sys_yield(Context *c);
 void sys_exit(Context *c);
 void sys_write(Context *c);
 void sys_brk(Context *c);
+void sys_open(Context *c);
+void sys_read(Context *c);
+void sys_close(Context *c);
+void sys_lseek(Context *c);
+
 static void ((*syscalls[])(Context *c)) = {
   [SYS_yield] = sys_yield,
   [SYS_exit] = sys_exit,
   [SYS_write] = sys_write,
   [SYS_brk] = sys_brk,
+  [SYS_open] = sys_open,
+  [SYS_read] = sys_read,
+  [SYS_close] = sys_close,
+  [SYS_lseek] = sys_lseek,
 };
 
 void do_syscall(Context *c) {
@@ -21,6 +30,10 @@ void do_syscall(Context *c) {
     case SYS_exit:
     case SYS_write:
     case SYS_brk:
+    case SYS_open:
+    case SYS_read:
+    case SYS_close:
+    case SYS_lseek:
       syscalls[a[0]](c); break;
     default: panic("Unhandled syscall ID = %d", a[0]);
   }
@@ -37,20 +50,43 @@ void sys_exit(Context *c) {
   halt(c->GPR2);
 }
 
-// 检查fd的值, 如果fd是1或2(分别代表stdout和stderr), 则将buf为首地址的len字节输出到串口(使用putch()即可). 最后还要设置正确的返回值
+int fs_open(const char *pathname, int flags, int mode);
+size_t fs_read(int fd, void *buf, size_t len);
+size_t fs_write(int fd, const void *buf, size_t len);
+size_t fs_lseek(int fd, size_t offset, int whence);
+int fs_close(int fd);
 
 void sys_write(Context *c) {
   int fd = c->GPR2;
   char *buf = (char *)c->GPR3;
   int len = c->GPR4;
-  if (fd == 1 || fd == 2) {
-    for (int i = 0; i < len; i++) {
-      putch(buf[i]);
-    }
-    c->GPRx = len;
-  } else {
-    panic("sys_write: fd = %d", fd);
-  }
+  c->GPRx = fs_write(fd, buf, len);
+}
+
+void sys_read(Context *c) {
+  int fd = c->GPR2;
+  char *buf = (char *)c->GPR3;
+  int len = c->GPR4;
+  c->GPRx = fs_read(fd, buf, len);
+}
+
+void sys_lseek(Context *c) {
+  int fd = c->GPR2;
+  int offset = c->GPR3;
+  int whence = c->GPR4;
+  c->GPRx = fs_lseek(fd, offset, whence);
+}
+
+void sys_open(Context *c) {
+  char *pathname = (char *)c->GPR2;
+  int flags = c->GPR3;
+  int mode = c->GPR4;
+  c->GPRx = fs_open(pathname, flags, mode);
+}
+
+void sys_close(Context *c) {
+  int fd = c->GPR2;
+  c->GPRx = fs_close(fd);
 }
 
 void sys_brk(Context *c) {
