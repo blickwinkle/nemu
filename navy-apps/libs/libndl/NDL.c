@@ -73,15 +73,15 @@ void NDL_OpenCanvas(int *w, int *h) {
     }
     canvas_h = *h;
     canvas_w = *w;
-    printf("NDL_OpenCanvas: screen_w = %d, screen_h = %d, canvas_w = %d, canvas_h = %d\n", screen_w, screen_h, canvas_w, canvas_h);
+    // printf("NDL_OpenCanvas: screen_w = %d, screen_h = %d, canvas_w = %d, canvas_h = %d\n", screen_w, screen_h, canvas_w, canvas_h);
   }
 }
 
 void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
-  printf("NDL_DrawRect: x = %d, y = %d, w = %d, h = %d\n", x, y, w, h);
+  // printf("NDL_DrawRect: x = %d, y = %d, w = %d, h = %d\n", x, y, w, h);
   for (int i = 0; i < h; i ++) {
     lseek(fbdev, (y + i) * screen_w * sizeof(uint32_t) + x * sizeof(uint32_t), SEEK_SET);
-    printf("NDL_DrawRect: lseek = %d\n", ((y + i) * screen_w * sizeof(uint32_t) + x * sizeof(uint32_t)) / 4);
+    // printf("NDL_DrawRect: lseek = %d\n", ((y + i) * screen_w * sizeof(uint32_t) + x * sizeof(uint32_t)) / 4);
     write(fbdev, pixels + i * w, w * sizeof(uint32_t));
   }
 }

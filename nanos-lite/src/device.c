@@ -41,7 +41,7 @@ size_t dispinfo_read(void *buf, size_t offset, size_t len) {
   // 1. 读取屏幕信息
   AM_GPU_CONFIG_T info;
   ioe_read(AM_GPU_CONFIG, &info);
-  printf("dispinfo_read : width: %d, height: %d\n", info.width, info.height);
+  // printf("dispinfo_read : width: %d, height: %d\n", info.width, info.height);
   // 2. 将信息写入buf
   return snprintf(buf, len, "%d\n%d\n", info.width, info.height);
 }
