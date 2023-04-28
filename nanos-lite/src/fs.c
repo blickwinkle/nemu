@@ -84,5 +84,6 @@ size_t fs_lseek(int fd, size_t offset, int whence) {
   return file_table[fd].open_offset;
 }
 int fs_close(int fd) {
+  file_table[fd].open_offset = 0;
   return 0;
 }
