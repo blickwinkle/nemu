@@ -28,6 +28,7 @@ size_t invalid_write(const void *buf, size_t offset, size_t len) {
 size_t serial_write(const void *buf, size_t offset, size_t len);
 size_t events_read(void *buf, size_t offset, size_t len);
 size_t dispinfo_read(void *buf, size_t offset, size_t len);
+size_t fb_write(const void *buf, size_t offset, size_t len);
 /* This is the information about all files in disk. */
 static Finfo file_table[] __attribute__((used)) = {
   [FD_STDIN]  = {"stdin", 0, 0, 0, invalid_read, invalid_write},
@@ -35,7 +36,7 @@ static Finfo file_table[] __attribute__((used)) = {
   [FD_STDERR] = {"stderr", 0, 0, 0, invalid_read, serial_write},
   [FD_EVENTS] = {"/dev/events", 0, 0, 0, events_read, invalid_write},
   [FD_DISPINFO] = {"/proc/dispinfo", 0, 0, 0, dispinfo_read, invalid_write},
-  [FD_FB] = {"/dev/fb", 0, 0, 0, invalid_read, invalid_write},
+  [FD_FB] = {"/dev/fb", 0, 0, 0, invalid_read, fb_write},
 #include "files.h"
 };
 
@@ -43,15 +44,15 @@ size_t ramdisk_read(void *buf, size_t offset, size_t len);
 size_t ramdisk_write(const void *buf, size_t offset, size_t len);
 
 void init_fs() {
-  // TODO: initialize the size of /dev/fb
-  for (int i = 1; i < sizeof(file_table) / sizeof(file_table[0]); i++) {
-    // if (file_table[i].size == 0) continue ;
-    file_table[i].disk_offset = file_table[i - 1].disk_offset + file_table[i - 1].size;
-    file_table[i].open_offset = 0;
+  for (int i = 0; i < sizeof(file_table) / sizeof(file_table[0]); i++) {
     if (file_table[i].read != NULL || file_table[i].write != NULL) continue ;
     file_table[i].read = ramdisk_read;
     file_table[i].write = ramdisk_write;
   }
+
+  // 对文件记录表中/dev/fb的大小进行初始化.
+  AM_GPU_CONFIG_T info = io_read(AM_GPU_CONFIG);
+  file_table[FD_FB].size = info.width * info.height * sizeof(uint32_t);
 }
 
 int fs_open(const char *pathname, int flags, int mode) {
