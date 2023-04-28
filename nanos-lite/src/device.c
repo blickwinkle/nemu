@@ -33,7 +33,7 @@ size_t events_read(void *buf, size_t offset, size_t len) {
     return 0;
   }
 
-  return snprintf(buf, len, "%s %s\n", ev.keydown ? "kdwn" : "kup ", keyname[ev.keycode]);
+  return snprintf(buf, len, "%d %d %s %s\n", ev.keydown, ev.keycode, ev.keydown ? "kdwn" : "kup ", keyname[ev.keycode]);
 }
 // 屏幕信息, 包含的keys: `WIDTH`表示宽度, `HEIGHT`表示高度.
 size_t dispinfo_read(void *buf, size_t offset, size_t len) {
