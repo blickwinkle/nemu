@@ -18,7 +18,7 @@ void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
     assert(0);
   } else {
     assert(s->pixels);
-    if (x == y == w == h == 0) {
+    if (!x && !y && !w && !h) {
       x = y = 0;
       w = s->w;
       h = s->h;
