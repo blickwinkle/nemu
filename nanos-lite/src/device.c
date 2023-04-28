@@ -1,4 +1,6 @@
 
+#include "am.h"
+#include "amdev.h"
 #include "klib-macros.h"
 #include <common.h>
 #include <stdint.h>
@@ -37,7 +39,9 @@ size_t events_read(void *buf, size_t offset, size_t len) {
 size_t dispinfo_read(void *buf, size_t offset, size_t len) {
   //code:
   // 1. 读取屏幕信息
-  AM_GPU_CONFIG_T info = io_read(AM_GPU_CONFIG);
+  AM_GPU_CONFIG_T info;
+  ioe_read(AM_GPU_CONFIG, &info);
+  printf("dispinfo_read : width: %d, height: %d\n", info.width, info.height);
   // 2. 将信息写入buf
   return snprintf(buf, len, "WIDTH : %d\nHEIGHT:%d\n", info.width, info.height);
 }
