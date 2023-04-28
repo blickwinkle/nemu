@@ -47,7 +47,7 @@ size_t fb_write(const void *buf, size_t offset, size_t len) {
   AM_GPU_MEMCPY_T info = {
     .dest =  offset,
     .src = buf,
-    .size = len / sizeof(uint32_t)
+    .size = len
   };
   ioe_write(AM_GPU_MEMCPY, &info);
   return len;
