@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <sys/time.h>
 
@@ -10,7 +11,8 @@ int main() {
     while(1) {
         struct timeval tv1;
         gettimeofday(&tv1, NULL);
-        if(tv1.tv_usec - tv.tv_usec >= 500000) {
+        uint64_t us = (tv1.tv_sec - tv.tv_sec) * 1000000 + tv1.tv_usec - tv.tv_usec;
+        if(us >= 500000) {
             printf("tv_sec: %ld\n", tv1.tv_sec);
             printf("tv_usec: %ld\n", tv1.tv_usec);
             tv = tv1;
