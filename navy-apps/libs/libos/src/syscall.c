@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -99,7 +100,10 @@ off_t _lseek(int fd, off_t offset, int whence) {
 }
 
 int _gettimeofday(struct timeval *tv, struct timezone *tz) {
-  _exit(SYS_gettimeofday);
+  uint64_t us;
+  _syscall_(SYS_gettimeofday, (intptr_t)&us, 0, 0);
+  tv->tv_sec = us / 1000000;
+  tv->tv_usec = us % 1000000;
   return 0;
 }
 

@@ -1,4 +1,5 @@
 #include <common.h>
+#include <stdint.h>
 #include "am.h"
 #include "syscall.h"
 void sys_yield(Context *c);
@@ -9,7 +10,7 @@ void sys_open(Context *c);
 void sys_read(Context *c);
 void sys_close(Context *c);
 void sys_lseek(Context *c);
-
+void sys_gettimeofday(Context *c);
 static void ((*syscalls[])(Context *c)) = {
   [SYS_yield] = sys_yield,
   [SYS_exit] = sys_exit,
@@ -19,6 +20,7 @@ static void ((*syscalls[])(Context *c)) = {
   [SYS_read] = sys_read,
   [SYS_close] = sys_close,
   [SYS_lseek] = sys_lseek,
+  [SYS_gettimeofday] = sys_gettimeofday,
 };
 
 void do_syscall(Context *c) {
@@ -34,6 +36,7 @@ void do_syscall(Context *c) {
     case SYS_read:
     case SYS_close:
     case SYS_lseek:
+    case SYS_gettimeofday:
       syscalls[a[0]](c); break;
     default: panic("Unhandled syscall ID = %d", a[0]);
   }
@@ -90,5 +93,11 @@ void sys_close(Context *c) {
 }
 
 void sys_brk(Context *c) {
+  c->GPRx = 0;
+}
+
+void sys_gettimeofday(Context *c) {
+  uint64_t *us = (uint64_t *)c->GPR2;
+  ioe_read(AM_TIMER_UPTIME, &us);
   c->GPRx = 0;
 }
