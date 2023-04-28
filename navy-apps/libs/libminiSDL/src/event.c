@@ -30,6 +30,7 @@ int SDL_WaitEvent(SDL_Event *event) {
   } else {
     event->type = SDL_KEYUP;
   }
+  printf("SDL_WaitEvent: key = %d, is_down : %d\n", key, is_down);
   event->key.keysym.sym = key;
   return 0;
 }
