@@ -98,6 +98,6 @@ void sys_brk(Context *c) {
 
 void sys_gettimeofday(Context *c) {
   uint64_t *us = (uint64_t *)c->GPR2;
-  ioe_read(AM_TIMER_UPTIME, &us);
+  ioe_read(AM_TIMER_UPTIME, us);
   c->GPRx = 0;
 }
