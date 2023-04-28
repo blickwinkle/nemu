@@ -1,3 +1,4 @@
+
 #include <common.h>
 
 #if defined(MULTIPROGRAM) && !defined(TIME_SHARING)
@@ -30,9 +31,13 @@ size_t events_read(void *buf, size_t offset, size_t len) {
 
   return snprintf(buf, len, "%s %s\n", ev.keydown ? "kdwn" : "kup ", keyname[ev.keycode]);
 }
-
+// 屏幕信息, 包含的keys: `WIDTH`表示宽度, `HEIGHT`表示高度.
 size_t dispinfo_read(void *buf, size_t offset, size_t len) {
-  return 0;
+  //code:
+  // 1. 读取屏幕信息
+  AM_GPU_CONFIG_T info = io_read(AM_GPU_CONFIG);
+  // 2. 将信息写入buf
+  return snprintf(buf, len, "WIDTH : %d\nHEIGHT:%d\n", info.width, info.height);
 }
 
 size_t fb_write(const void *buf, size_t offset, size_t len) {

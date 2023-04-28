@@ -43,6 +43,31 @@ void NDL_OpenCanvas(int *w, int *h) {
       if (strcmp(buf, "mmap ok") == 0) break;
     }
     close(fbctl);
+  } else {
+    // 打开一张(*w) X (*h)的画布
+    // 如果*w和*h均为0, 则将系统全屏幕作为画布, 并将*w和*h分别设为系统屏幕的大小
+    if (*w == 0 && *h == 0) {
+      int fd = open("/proc/dispinfo", 0);
+      if (fd < 0) {
+        fprintf(stderr, "failed to open /proc/dispinfo\n");
+        exit(1);
+      }
+      char buf[64];
+      int nread = read(fd, buf, sizeof(buf) - 1);
+      if (nread <= 0) {
+        fprintf(stderr, "failed to read /proc/dispinfo\n");
+        exit(1);
+      }
+      buf[nread] = '\0';
+      sscanf(buf, "%d %d", w, h);
+      close(fd);
+    }
+    fbdev = open("/dev/fb", 0);
+    if (fbdev < 0) {
+      fprintf(stderr, "failed to open /dev/fb\n");
+      exit(1);
+    }
+    screen_w = *w; screen_h = *h;
   }
 }
 
