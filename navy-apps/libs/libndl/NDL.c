@@ -59,6 +59,7 @@ void NDL_OpenCanvas(int *w, int *h) {
       exit(1);
     }
     buf[nread] = '\0';
+    // fprintf(stdout, "111 NDL_OpenCanvas: screen_w = %d, screen_h = %d, canvas_w = %d, canvas_h = %d\n", screen_w, screen_h, canvas_w, canvas_h);
     sscanf(buf, "%d %d", &screen_w, &screen_h);
     close(fd);
 
@@ -73,7 +74,7 @@ void NDL_OpenCanvas(int *w, int *h) {
     }
     canvas_h = *h;
     canvas_w = *w;
-    // printf("NDL_OpenCanvas: screen_w = %d, screen_h = %d, canvas_w = %d, canvas_h = %d\n", screen_w, screen_h, canvas_w, canvas_h);
+    printf("NDL_OpenCanvas: screen_w = %d, screen_h = %d, canvas_w = %d, canvas_h = %d\n", screen_w, screen_h, canvas_w, canvas_h);
   }
 }
 
