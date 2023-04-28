@@ -283,6 +283,15 @@ int snprintf(char *out, size_t n, const char *fmt, ...) {
 }
 
 int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
+  // code:
+  #define increase_and_check_length \
+    do { \
+      out++; \
+      if ((out - p) >= n) { \
+        return out - p; \
+      } \
+    } while (0)
+
   const char *old_fmt = fmt;
   const char *p = out;
   while (*fmt != '\0') {
@@ -295,7 +304,7 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
           int len = 0;
           if (x < 0) {
             *out = '-';
-            out++;
+            increase_and_check_length;
             x = -x;
           }
           do {
@@ -304,7 +313,7 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
           } while (x > 0);
           for (int i = len - 1; i >= 0; i--) {
             *out = buf[i];
-            out++;
+            increase_and_check_length;
           }
           break;
         }
@@ -312,7 +321,7 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
           char *s = va_arg(ap, char *);
           while (*s != '\0') {
             *out = *s;
-            out++;
+            increase_and_check_length;
             s++;
           }
           break;
@@ -320,29 +329,29 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
         case 'c': {
           char c = va_arg(ap, int);
           *out = c;
-          out++;
+          increase_and_check_length;
           break;
         }
         case 'p': {
-          void *p = va_arg(ap, void *);
+          void *_p = va_arg(ap, void *);
           char buf[BUF_SIZE];
           int len = 0;
           do {
-            int x = (uintptr_t)p % 16;
+            int x = (uintptr_t)_p % 16;
             if (x < 10) {
               buf[len++] = x + '0';
             } else {
               buf[len++] = x - 10 + 'a';
             }
-            p = (void *)((uintptr_t)p / 16);
-          } while ((uintptr_t)p > 0);
+            _p = (void *)((uintptr_t)_p / 16);
+          } while ((uintptr_t)_p > 0);
           *out = '0';
-          out++;
+          increase_and_check_length;
           *out = 'x';
-          out++;
+          increase_and_check_length;
           for (int i = len - 1; i >= 0; i--) {
             *out = buf[i];
-            out++;
+            increase_and_check_length;
           }
           break;
         }
@@ -361,13 +370,13 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
           } while (x > 0);
           for (int i = len - 1; i >= 0; i--) {
             *out = buf[i];
-            out++;
+            increase_and_check_length;
           }
           break;
         }
         case '%': {
           *out = '%';
-          out++;
+          increase_and_check_length;
           break;
         }
         //处理类似%02d这种格式，如果输出的整型数不足两位，左侧用0补齐。需要能 处理任意位数的情况。
@@ -403,7 +412,7 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
             }
             for (int i = len - 1; i >= 0; i--) {
               *out = buf[i];
-              out++;
+              increase_and_check_length;
             }
             break;
           } else if (c == 'x') {
@@ -425,7 +434,7 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
             }
             for (int i = len - 1; i >= 0; i--) {
               *out = buf[i];
-              out++;
+              increase_and_check_length;
             }
             break;
           } else {
@@ -445,7 +454,7 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
           } while (x > 0);
           for (int i = len - 1; i >= 0; i--) {
             *out = buf[i];
-            out++;
+            increase_and_check_length;
           }
           break;
         }
@@ -482,7 +491,7 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
               }
               for (int i = len - 1; i >= 0; i--) {
                 *out = buf[i];
-                out++;
+                increase_and_check_length;
               }
               break;
             } else if (c == 'x') {
@@ -504,7 +513,7 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
               }
               for (int i = len - 1; i >= 0; i--) {
                 *out = buf[i];
-                out++;
+                increase_and_check_length;
               }
               break;
             } else {
@@ -520,7 +529,7 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
       }
     } else {
       *out = *fmt;
-      out++;
+      increase_and_check_length;
     }
     fmt++;
   }
