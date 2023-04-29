@@ -64,7 +64,6 @@ void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_
                  src->pixels)[(srcrect->y + i) * src->w + srcrect->x + j];
       }
     }
-    
   }
 }
 //往画布的指定矩形区域中填充指定的颜色
