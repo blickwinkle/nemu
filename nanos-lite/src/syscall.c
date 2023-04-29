@@ -26,7 +26,7 @@ static void ((*syscalls[])(Context *c)) = {
 void do_syscall(Context *c) {
   uintptr_t a[4];
   a[0] = c->GPR1;
-  // Log("syscall ID = %d arguments: %x %x %x ret: %x", a[0], c->GPR2, c->GPR3, c->GPR4, c->GPRx);
+  Log("syscall ID = %d arguments: %x %x %x ret: %x", a[0], c->GPR2, c->GPR3, c->GPR4, c->GPRx);
   switch (a[0]) {
     case SYS_yield: 
     case SYS_exit:
