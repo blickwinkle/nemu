@@ -26,7 +26,7 @@ static void ((*syscalls[])(Context *c)) = {
 void do_syscall(Context *c) {
   uintptr_t a[4];
   a[0] = c->GPR1;
-  // Log("syscall ID = %d arguments: %x %x %x ret: %x", a[0], c->GPR2, c->GPR3, c->GPR4, c->GPRx);
+  Log("syscall ID = %d arguments: %x %x %x ret: %x", a[0], c->GPR2, c->GPR3, c->GPR4, c->GPRx);
   switch (a[0]) {
     case SYS_yield: 
     case SYS_exit:
@@ -40,7 +40,7 @@ void do_syscall(Context *c) {
       syscalls[a[0]](c); break;
     default: panic("Unhandled syscall ID = %d", a[0]);
   }
-  c->mepc += 4;
+  
 #ifdef CONFIG_STRACE
   Log("syscall ID = %d arguments: %x %x %x ret: %x", a[0], c->GPR2, c->GPR3, c->GPR4, c->GPRx);
 #endif
