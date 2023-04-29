@@ -26,15 +26,62 @@ size_t serial_write(const void *buf, size_t offset, size_t len) {
   return len;
 }
 
-size_t events_read(void *buf, size_t offset, size_t len) {
-  AM_INPUT_KEYBRD_T ev = io_read(AM_INPUT_KEYBRD);
-  if (ev.keycode == AM_KEY_NONE) {
-    MULTIPROGRAM_YIELD();
-    return 0;
-  }
+// size_t events_read(void *buf, size_t offset, size_t len) {
+//   AM_INPUT_KEYBRD_T ev = io_read(AM_INPUT_KEYBRD);
+//   if (ev.keycode == AM_KEY_NONE) {
+//     MULTIPROGRAM_YIELD();
+//     return 0;
+//   }
 
-  return snprintf(buf, len, "%d %d %s %s\n", ev.keydown, ev.keycode, ev.keydown ? "kdwn" : "kup ", keyname[ev.keycode]);
+//   return snprintf(buf, len, "%d %d %s %s\n", ev.keydown, ev.keycode, ev.keydown ? "kdwn" : "kup ", keyname[ev.keycode]);
+// }
+
+//offset被忽视
+size_t events_read(void *buf, size_t offset, size_t len) {
+  //yield();
+  AM_INPUT_KEYBRD_T ev = io_read(AM_INPUT_KEYBRD);
+  if (ev.keycode == AM_KEY_NONE) return 0;
+  
+  // switch (ev.keycode){
+  // case AM_KEY_F1:
+  //   switch_program_index(1);
+  //   return 0;
+
+  // case AM_KEY_F2:
+  //   switch_program_index(2);
+  //   return 0;
+
+  // case AM_KEY_F3:
+  //   switch_program_index(3);
+  //   return 0;
+  
+  // default:
+  //   break;
+  // }
+
+  //int real_length = 4;
+  char *tag = ev.keydown ? "kd " : "ku ";
+  //if (real_length <= len){
+  strcpy(buf, tag);
+  // }else {
+  //   assert(0);
+  //   return 0;
+  // }
+  
+  //real_length += strlen(keyname[ev.keycode]);
+  
+  //if (real_length<= len){
+  strcat(buf, keyname[ev.keycode]);
+  // }else {
+  //   Log("Need %d for %s%s but got %d", strlen(keyname[ev.keycode]), (char *)buf, keyname[ev.keycode], len);
+  //   assert(0);
+  //   return 0;
+  // }
+  Log("Got  (kbd): %s (%d) %s\n", keyname[ev.keycode], ev.keycode, ev.keydown ? "DOWN" : "UP");
+  
+  return 1;
 }
+
 // 屏幕信息, 包含的keys: `WIDTH`表示宽度, `HEIGHT`表示高度.
 size_t dispinfo_read(void *buf, size_t offset, size_t len) {
   //code:

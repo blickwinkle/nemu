@@ -1,5 +1,6 @@
 #include <common.h>
 #include <stdint.h>
+#include <sys/time.h>
 #include "am.h"
 #include "syscall.h"
 void sys_yield(Context *c);
@@ -98,7 +99,9 @@ void sys_brk(Context *c) {
 }
 
 void sys_gettimeofday(Context *c) {
-  uint64_t *us = (uint64_t *)c->GPR2;
-  ioe_read(AM_TIMER_UPTIME, us);
+  struct timeval *tv = (struct timeval *)c->GPR2;
+  __uint64_t time = io_read(AM_TIMER_UPTIME).us;
+  tv->tv_usec = (time % 1000000);
+  tv->tv_sec = (time / 1000000);
   c->GPRx = 0;
 }
