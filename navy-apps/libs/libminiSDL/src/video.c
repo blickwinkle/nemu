@@ -11,11 +11,17 @@ void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_
   printf("SDL_BlitSurface: src = %p, srcrect = %p, dst = %p, dstrect = %p\n", src, srcrect, dst, dstrect);
   assert(dst && src);
   assert(dst->format->BitsPerPixel == src->format->BitsPerPixel);
-  SDL_Rect tmp;
+  SDL_Rect tmp1;
+  SDL_Rect tmp2;
   if (srcrect == NULL) {
-    tmp.x = tmp.y = 0;
-    tmp.w = src->w, tmp.h = src->h;
-    srcrect = &tmp;
+    tmp1.x = tmp1.y = 0;
+    tmp1.w = src->w, tmp1.h = src->h;
+    srcrect = &tmp1;
+  }
+  if (dstrect == NULL) {
+    tmp2.x = tmp2.y = 0;
+    tmp2.w = dst->w, tmp2.h = dst->h;
+    dstrect = &tmp2;
   }
   // 将一张画布中的指定矩形区域复制到另一张画布的指定位置
   if (dst->format->BitsPerPixel == 8) {
