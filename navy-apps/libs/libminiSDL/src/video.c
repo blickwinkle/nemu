@@ -33,11 +33,33 @@ void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_
       }
     }
   } else {
-    for (int i = 0; i < srcrect->h; i++) {
-      for (int j = 0; j < srcrect->w; j++) {
-        ((uint32_t *)dst->pixels)[(dstrect->y + i) * dst->w + dstrect->x + j] =
-            ((uint32_t *)
-                 src->pixels)[(srcrect->y + i) * src->w + srcrect->x + j];
+    // for (int i = 0; i < srcrect->h; i++) {
+    //   for (int j = 0; j < srcrect->w; j++) {
+    //     ((uint32_t *)dst->pixels)[(dstrect->y + i) * dst->w + dstrect->x + j] =
+    //         ((uint32_t *)
+    //              src->pixels)[(srcrect->y + i) * src->w + srcrect->x + j];
+    //   }
+    // }
+    uint8_t* src_pixels = (uint8_t*)src->pixels;
+    uint8_t* dst_pixels = (uint8_t*)dst->pixels;
+
+    int rect_w, rect_h, src_x, src_y, dst_x, dst_y;
+    if (srcrect){
+      rect_w = srcrect->w; rect_h = srcrect->h;
+      src_x = srcrect->x; src_y = srcrect->y; 
+    }else {
+      rect_w = src->w; rect_h = src->h;
+      src_x = 0; src_y = 0;
+    }
+    if (dstrect){
+      dst_x = dstrect->x, dst_y = dstrect->y;
+    }else {
+      dst_x = 0; dst_y = 0;
+    }
+    
+    for (int i = 0; i < rect_h; ++i){
+      for (int j = 0; j < rect_w; ++j){
+        dst_pixels[(dst_y + i) * dst->w + dst_x + j] = src_pixels[(src_y + i) * src->w + src_x + j];
       }
     }
   }
@@ -98,10 +120,12 @@ static inline uint32_t translate_color(SDL_Color *color){
 void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
     printf("SDL_UpdateRect: s = %p, x = %d, y = %d, w = %d, h = %d\n", s, x, y, w, h);
     assert(s->pixels);
-    if (!w && !h) {
-      w = s->w;
-      h = s->h;
-    }
+    if (w == 0 && h == 0 && x == 0 && y == 0) {
+        w = s->w;
+        h = s->h;
+        x = 0;
+        y = 0;
+      }
     if (s->format->BitsPerPixel == 32) {
       NDL_DrawRect((uint32_t *)s->pixels, x, y, w, h);
     } else {
@@ -111,12 +135,7 @@ void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
       //     NDL_DrawPoint(s->format->palette->colors[((uint8_t *)s->pixels)[(y + j) * s->w + x + i]].val, x + i, y + j);
       //   }
       // }
-      if (w == 0 && h == 0 && x == 0 && y == 0) {
-        w = s->w;
-        h = s->h;
-        x = 0;
-        y = 0;
-      }
+      
 
       uint32_t *pixels = malloc(w * h * sizeof(uint32_t));
       assert(pixels);
