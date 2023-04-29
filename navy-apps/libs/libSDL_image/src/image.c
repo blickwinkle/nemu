@@ -12,7 +12,26 @@ SDL_Surface* IMG_Load_RW(SDL_RWops *src, int freesrc) {
 }
 
 SDL_Surface* IMG_Load(const char *filename) {
-  return NULL;
+  // 1. 用libc中的文件操作打开文件, 并获取文件大小size
+  FILE *fp = fopen(filename, "rb");
+  if (fp == NULL) {
+    printf("IMG_Load: failed to open file %s\n", filename);
+    return NULL;
+  }
+  fseek(fp, 0, SEEK_END);
+  int size = ftell(fp);
+  fseek(fp, 0, SEEK_SET);
+  // 2. 申请一段大小为size的内存区间buf
+  char *buf = malloc(size);
+  // 3. 将文件中的内容读入到buf中
+  fread(buf, size, 1, fp);
+  // 4.将buf和size作为参数, 调用STBIMG_LoadFromMemory(), 它会返回一个SDL_Surface结构的指针
+  SDL_Surface *ret = STBIMG_LoadFromMemory(buf, size);
+  // 5. 关闭文件, 释放申请的内存
+  fclose(fp);
+  free(buf);
+  // 6. 返回SDL_Surface结构的指针
+  return ret;
 }
 
 int IMG_isPNG(SDL_RWops *src) {
