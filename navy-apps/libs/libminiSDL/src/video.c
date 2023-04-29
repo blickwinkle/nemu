@@ -120,6 +120,11 @@ static inline uint32_t translate_color(SDL_Color *color){
 void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
     printf("SDL_UpdateRect: s = %p, x = %d, y = %d, w = %d, h = %d\n", s, x, y, w, h);
     assert(s->pixels);
+    if (w == 0 && h == 0 && x ==0 && y == 0){
+      //printf("%d %d\n", s->w, s->h);
+      NDL_DrawRect((uint32_t *)s->pixels, 0, 0, s->w, s->h);
+      return ;
+    }
     if (w == 0 && h == 0 && x == 0 && y == 0) {
         w = s->w;
         h = s->h;
@@ -151,6 +156,7 @@ void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
         }
       }
       NDL_DrawRect(pixels, x, y, w, h);
+      free(pixels);
     }
     
   
