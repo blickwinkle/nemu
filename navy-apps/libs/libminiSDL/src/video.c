@@ -8,7 +8,7 @@
 
 // 将一张画布中的指定矩形区域复制到另一张画布的指定位置
 void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect) {
-  // printf("SDL_BlitSurface: src = %p, srcrect = %p, dst = %p, dstrect = %p\n", src, srcrect, dst, dstrect);
+  printf("SDL_BlitSurface: src = %p, srcrect = %p, dst = %p, dstrect = %p\n", src, srcrect, dst, dstrect);
   assert(dst && src);
   assert(dst->format->BitsPerPixel == src->format->BitsPerPixel);
   SDL_Rect tmp1;
@@ -120,7 +120,7 @@ static inline uint32_t translate_color(SDL_Color *color){
 }
 
 void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
-    // printf("SDL_UpdateRect: s = %p, x = %d, y = %d, w = %d, h = %d\n", s, x, y, w, h);
+    printf("SDL_UpdateRect: s = %p, x = %d, y = %d, w = %d, h = %d\n", s, x, y, w, h);
     assert(s->pixels);
     if (w == 0 && h == 0 && x == 0 && y == 0) {
         w = s->w;
