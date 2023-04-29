@@ -66,7 +66,7 @@ void sys_write(Context *c) {
   int fd = c->GPR2;
   char *buf = (char *)c->GPR3;
   int len = c->GPR4;
-  Log("write: %d %s %d", fd, buf, len);
+  Log("write: %d %p %d", fd, buf, len);
   c->GPRx = fs_write(fd, buf, len);
 }
 
@@ -74,7 +74,7 @@ void sys_read(Context *c) {
   int fd = c->GPR2;
   char *buf = (char *)c->GPR3;
   int len = c->GPR4;
-  Log("read: %d %s %d", fd, buf, len);
+  Log("read: %d %p %d", fd, buf, len);
   c->GPRx = fs_read(fd, buf, len);
 }
 
