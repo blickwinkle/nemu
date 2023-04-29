@@ -43,7 +43,7 @@ size_t dispinfo_read(void *buf, size_t offset, size_t len) {
   ioe_read(AM_GPU_CONFIG, &info);
   // printf("dispinfo_read : width: %d, height: %d\n", info.width, info.height);
   // 2. 将信息写入buf
-  return snprintf(buf, len, "%d\n%d\n", info.width, info.height);
+  return snprintf(buf, len, "WIDTH : %d\nHEIGHT : %d\n", info.width, info.height);
 }
 
 // 用于把buf中的len字节写到屏幕上offset处. 你需要先从offset计算出屏幕上的坐标, 然后调用IOE来进行绘图. 另外我们约定每次绘图后总是马上将frame buffer中的内容同步到屏幕上.

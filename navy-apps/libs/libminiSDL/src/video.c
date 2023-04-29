@@ -137,7 +137,7 @@ void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
       // }
       
 
-      uint32_t *pixels = malloc(w * h * sizeof(uint32_t));
+      uint32_t pixels[w * h];
       assert(pixels);
       uint8_t *src = (uint8_t *)s->pixels;
 
@@ -150,8 +150,6 @@ void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
         }
       }
       NDL_DrawRect(pixels, x, y, w, h);
-
-      free(pixels);
     }
     
   

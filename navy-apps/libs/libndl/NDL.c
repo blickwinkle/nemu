@@ -44,6 +44,19 @@ void NDL_OpenCanvas(int *w, int *h) {
     }
     close(fbctl);
   } else {
+     if (*w == 0){
+    *w = screen_w;
+  }else if(*w > screen_w){
+    
+  }
+  if (*h == 0){
+    *h = screen_h;
+  }else if(*h > screen_h){
+    
+  }
+  canvas_w = *w;
+  canvas_h = *h;
+  return ;
     // 打开一张(*w) X (*h)的画布
     // 如果*w和*h均为0, 则将系统全屏幕作为画布, 并将*w和*h分别设为系统屏幕的大小
 
@@ -63,11 +76,7 @@ void NDL_OpenCanvas(int *w, int *h) {
     sscanf(buf, "%d %d", &screen_w, &screen_h);
     close(fd);
 
-    fbdev = open("/dev/fb", 0);
-    if (fbdev < 0) {
-      fprintf(stderr, "failed to open /dev/fb\n");
-      exit(1);
-    }
+    
     if (*w == 0 || *h == 0) {
       *w = screen_w;
       *h = screen_h;
@@ -83,6 +92,11 @@ void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
     x = y = 0;
     w = canvas_w;
     h = canvas_h;
+  }
+  fbdev = open("/dev/fb", 0);
+  if (fbdev < 0) {
+    fprintf(stderr, "failed to open /dev/fb\n");
+    exit(1);
   }
   // printf("NDL_DrawRect: x = %d, y = %d, w = %d, h = %d\n", x, y, w, h);
   for (int i = 0; i < h; i ++) {
@@ -111,10 +125,57 @@ int NDL_QueryAudio() {
   return 0;
 }
 
+static void read_key_value(char *str, char *key, int* value){
+  char buffer[128];
+  int len = 0;
+  for (char* c = str; *c; ++c){
+    if(*c != ' '){
+      buffer[len++] = *c;
+    }
+  }
+  buffer[len] = '\0';
+
+  sscanf(buffer, "%[a-zA-Z]:%d", key, value);
+  // printf("read_key_value\n");
+}
+
 int NDL_Init(uint32_t flags) {
   if (getenv("NWM_APP")) {
     evtdev = 3;
   }
+
+  char info[128], key[64];
+  int value;
+
+  //memset(info, 0, 128);
+  int dispinfo = open("/proc/dispinfo", 0);
+  read(dispinfo, info, sizeof(info));
+  close(dispinfo);
+  // printf("%s \n", info);
+
+  /* 获取第一个子字符串 */
+  char *token = strtok(info, "\n");
+   
+   /* 继续获取其他的子字符串 */
+   while( token != NULL ) {
+      
+      // printf("while begin 105 %s \n", info);
+      //printf("%s = %d\n", key, value);
+      read_key_value(token, key, &value);
+
+      if(strcmp(key, "WIDTH") == 0){
+        screen_w = value;
+      }else if(strcmp(key, "HEIGHT") == 0) {
+        screen_h = value;
+      }
+
+      // printf("while middle 105 %s \n", info);
+      token = strtok(NULL, "\n");
+      // printf("while end 105 %s \n", info);
+  }
+
+  printf("With width = %d, height = %d.\n", screen_w, screen_h);
+
   return 0;
 }
 
