@@ -56,12 +56,25 @@ void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
   if (dst->format->BitsPerPixel == 8) {
     assert(dst->format->palette);
     uint8_t idx = 0;
+    int flag = 0;
     for (int i = 0; i < dst->format->palette->ncolors; i++) {
       if (dst->format->palette->colors[i].val == color) {
         idx = i;
+        flag = 1;
         break;
       }
     }
+    if (!flag) {
+      if (dst->format->palette->ncolors < 256) {
+        idx = dst->format->palette->ncolors;
+        dst->format->palette->colors[idx].val = color;
+        dst->format->palette->ncolors++;
+      } else {
+        idx = rand() % 256;
+        dst->format->palette->colors[idx].val = color;
+      }
+    }
+
     for (int i = 0; i < dstrect->h; i++) {
       for (int j = 0; j < dstrect->w; j++) {
         ((uint8_t *)dst->pixels)[(dstrect->y + i) * dst->w + dstrect->x + j] = idx;
