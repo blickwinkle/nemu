@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <sys/time.h>
 #include "am.h"
+#include "debug.h"
 #include "syscall.h"
 void sys_yield(Context *c);
 void sys_exit(Context *c);
@@ -65,6 +66,7 @@ void sys_write(Context *c) {
   int fd = c->GPR2;
   char *buf = (char *)c->GPR3;
   int len = c->GPR4;
+  Log("write: %d %s %d", fd, buf, len);
   c->GPRx = fs_write(fd, buf, len);
 }
 
@@ -72,6 +74,7 @@ void sys_read(Context *c) {
   int fd = c->GPR2;
   char *buf = (char *)c->GPR3;
   int len = c->GPR4;
+  Log("read: %d %s %d", fd, buf, len);
   c->GPRx = fs_read(fd, buf, len);
 }
 
