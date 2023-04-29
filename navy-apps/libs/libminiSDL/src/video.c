@@ -25,21 +25,7 @@ void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_
   }
   // 将一张画布中的指定矩形区域复制到另一张画布的指定位置
   if (dst->format->BitsPerPixel == 8) {
-    for (int i = 0; i < srcrect->h; i++) {
-      for (int j = 0; j < srcrect->w; j++) {
-        ((uint8_t *)dst->pixels)[(dstrect->y + i) * dst->w + dstrect->x + j] =
-            ((uint8_t *)
-                 src->pixels)[(srcrect->y + i) * src->w + srcrect->x + j];
-      }
-    }
-  } else {
-    // for (int i = 0; i < srcrect->h; i++) {
-    //   for (int j = 0; j < srcrect->w; j++) {
-    //     ((uint32_t *)dst->pixels)[(dstrect->y + i) * dst->w + dstrect->x + j] =
-    //         ((uint32_t *)
-    //              src->pixels)[(srcrect->y + i) * src->w + srcrect->x + j];
-    //   }
-    // }
+
     uint8_t* src_pixels = (uint8_t*)src->pixels;
     uint8_t* dst_pixels = (uint8_t*)dst->pixels;
 
@@ -62,6 +48,23 @@ void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_
         dst_pixels[(dst_y + i) * dst->w + dst_x + j] = src_pixels[(src_y + i) * src->w + src_x + j];
       }
     }
+
+    // for (int i = 0; i < srcrect->h; i++) {
+    //   for (int j = 0; j < srcrect->w; j++) {
+    //     ((uint8_t *)dst->pixels)[(dstrect->y + i) * dst->w + dstrect->x + j] =
+    //         ((uint8_t *)
+    //              src->pixels)[(srcrect->y + i) * src->w + srcrect->x + j];
+    //   }
+    // }
+  } else {
+    for (int i = 0; i < srcrect->h; i++) {
+      for (int j = 0; j < srcrect->w; j++) {
+        ((uint32_t *)dst->pixels)[(dstrect->y + i) * dst->w + dstrect->x + j] =
+            ((uint32_t *)
+                 src->pixels)[(srcrect->y + i) * src->w + srcrect->x + j];
+      }
+    }
+    
   }
 }
 //往画布的指定矩形区域中填充指定的颜色
@@ -120,11 +123,6 @@ static inline uint32_t translate_color(SDL_Color *color){
 void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
     printf("SDL_UpdateRect: s = %p, x = %d, y = %d, w = %d, h = %d\n", s, x, y, w, h);
     assert(s->pixels);
-    if (w == 0 && h == 0 && x ==0 && y == 0){
-      //printf("%d %d\n", s->w, s->h);
-      NDL_DrawRect((uint32_t *)s->pixels, 0, 0, s->w, s->h);
-      return ;
-    }
     if (w == 0 && h == 0 && x == 0 && y == 0) {
         w = s->w;
         h = s->h;
