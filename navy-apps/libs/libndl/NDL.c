@@ -92,6 +92,11 @@ void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
   }
 }
 
+void NDL_DrawPoint(uint32_t color, int x, int y) {
+  lseek(fbdev, (y * screen_w + x) * sizeof(uint32_t), SEEK_SET);
+  write(fbdev, &color, sizeof(uint32_t));
+}
+
 void NDL_OpenAudio(int freq, int channels, int samples) {
 }
 
