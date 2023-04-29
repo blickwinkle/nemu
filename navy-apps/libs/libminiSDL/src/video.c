@@ -11,6 +11,12 @@ void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_
   printf("SDL_BlitSurface: src = %p, srcrect = %p, dst = %p, dstrect = %p\n", src, srcrect, dst, dstrect);
   assert(dst && src);
   assert(dst->format->BitsPerPixel == src->format->BitsPerPixel);
+  SDL_Rect tmp;
+  if (srcrect == NULL) {
+    tmp.x = tmp.y = 0;
+    tmp.w = src->w, tmp.h = src->h;
+    srcrect = &tmp;
+  }
   // 将一张画布中的指定矩形区域复制到另一张画布的指定位置
   if (dst->format->BitsPerPixel == 8) {
     for (int i = 0; i < srcrect->h; i++) {
@@ -35,6 +41,12 @@ void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
   printf("SDL_FillRect: dst = %p, dstrect = %p, color = %d\n", dst, dstrect, color);
   assert(dst);
   assert(dst->format->BitsPerPixel == 8 || dst->format->BitsPerPixel == 32);
+  SDL_Rect tmp;
+  if (dstrect == NULL) {
+    tmp.x = tmp.y = 0;
+    tmp.w = dst->w, tmp.h = dst->h;
+    dstrect = &tmp;
+  }
   if (dst->format->BitsPerPixel == 8) {
     assert(dst->format->palette);
     assert(color < dst->format->palette->ncolors);
