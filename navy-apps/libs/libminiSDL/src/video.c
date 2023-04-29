@@ -63,9 +63,7 @@ void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
 }
 
 void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
-  if (s->flags & SDL_HWSURFACE) {
-    assert(0);
-  } else {
+
     assert(s->pixels);
     if (!x && !y && !w && !h) {
       x = y = 0;
@@ -73,7 +71,7 @@ void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
       h = s->h;
     }
     NDL_DrawRect((uint32_t *)s->pixels, x, y, w, h);
-  }
+  
 }
 
 // APIs below are already implemented.
