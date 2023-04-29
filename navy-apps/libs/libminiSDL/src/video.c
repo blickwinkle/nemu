@@ -8,7 +8,7 @@
 
 // 将一张画布中的指定矩形区域复制到另一张画布的指定位置
 void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect) {
-  // printf("SDL_BlitSurface: src = %p, srcrect = %p, dst = %p, dstrect = %p\n", src, srcrect, dst, dstrect);
+  printf("SDL_BlitSurface: src = %p, srcrect = %p, dst = %p, dstrect = %p\n", src, srcrect, dst, dstrect);
   assert(dst && src);
   assert(dst->format->BitsPerPixel == src->format->BitsPerPixel);
   SDL_Rect tmp1;
@@ -44,7 +44,7 @@ void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_
 }
 //往画布的指定矩形区域中填充指定的颜色
 void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
-  // printf("SDL_FillRect: dst = %p, dstrect = %p, color = %d\n", dst, dstrect, color);
+  printf("SDL_FillRect: dst = %p, dstrect = %p, color = %d\n", dst, dstrect, color);
   assert(dst);
   assert(dst->format->BitsPerPixel == 8 || dst->format->BitsPerPixel == 32);
   SDL_Rect tmp;
@@ -92,7 +92,7 @@ void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
 }
 
 void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
-
+    printf("SDL_UpdateRect: s = %p, x = %d, y = %d, w = %d, h = %d\n", s, x, y, w, h);
     assert(s->pixels);
     if (!w && !h) {
       w = s->w;
