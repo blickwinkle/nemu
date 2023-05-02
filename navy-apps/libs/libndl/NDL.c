@@ -86,11 +86,11 @@ void NDL_OpenCanvas(int *w, int *h) {
 }
 
 void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
-  if (x == y == w == h == 0) {
-    x = y = 0;
-    w = canvas_w;
-    h = canvas_h;
-  }
+  // if (x == y == w == h == 0) {
+  //   x = y = 0;
+  //   w = canvas_w;
+  //   h = canvas_h;
+  // }
   fbdev = open("/dev/fb", 0);
   if (fbdev < 0) {
     fprintf(stderr, "failed to open /dev/fb\n");
