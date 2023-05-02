@@ -2,7 +2,7 @@
 #include <am.h>
 #include <nemu.h>
 #include <stdint.h>
-
+#include <stdio.h>
 #define SYNC_ADDR (VGACTL_ADDR + 4)
 
 
@@ -43,6 +43,7 @@ void __am_gpu_memcpy(AM_GPU_MEMCPY_T *req) {
   }
   char *c_src = (char *)src, *c_dst = (char *)dst;
   for (int i = 0; i < (req->size & 3); i++){
+    printf("hit\n");
     c_dst[i] = c_src[i];
   }
   outl(SYNC_ADDR, 1);
