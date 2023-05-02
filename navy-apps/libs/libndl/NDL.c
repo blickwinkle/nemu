@@ -86,22 +86,23 @@ void NDL_OpenCanvas(int *w, int *h) {
 }
 
 void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
-  // if (x == y == w == h == 0) {
-  //   x = y = 0;
-  //   w = canvas_w;
-  //   h = canvas_h;
-  // }
-  // fbdev = open("/dev/fb", 0);
-  // if (fbdev < 0) {
-  //   fprintf(stderr, "failed to open /dev/fb\n");
-  //   exit(1);
-  // }
-  // // printf("NDL_DrawRect: x = %d, y = %d, w = %d, h = %d\n", x, y, w, h);
-  // for (int i = 0; i < h; i ++) {
-  //   lseek(fbdev, (y + i) * screen_w * sizeof(uint32_t) + x * sizeof(uint32_t), SEEK_SET);
-  //   // printf("NDL_DrawRect: lseek = %d\n", ((y + i) * screen_w * sizeof(uint32_t) + x * sizeof(uint32_t)) / 4);
-  //   write(fbdev, pixels + i * w, w * sizeof(uint32_t));
-  // }
+  if (x == y == w == h == 0) {
+    x = y = 0;
+    w = canvas_w;
+    h = canvas_h;
+  }
+  fbdev = open("/dev/fb", 0);
+  if (fbdev < 0) {
+    fprintf(stderr, "failed to open /dev/fb\n");
+    exit(1);
+  }
+  // printf("NDL_DrawRect: x = %d, y = %d, w = %d, h = %d\n", x, y, w, h);
+  for (int i = 0; i < h; i ++) {
+    lseek(fbdev, (y + i) * screen_w * sizeof(uint32_t) + x * sizeof(uint32_t), SEEK_SET);
+    // printf("NDL_DrawRect: lseek = %d\n", ((y + i) * screen_w * sizeof(uint32_t) + x * sizeof(uint32_t)) / 4);
+    write(fbdev, pixels + i * w, w * sizeof(uint32_t));
+  }
+  return ;
 
   int graphics = open("/dev/fb", O_RDWR);
   
