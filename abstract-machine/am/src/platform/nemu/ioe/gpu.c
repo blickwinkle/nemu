@@ -45,7 +45,7 @@ void __am_gpu_memcpy(AM_GPU_MEMCPY_T *req) {
   for (int i = 0; i < (req->size & 3); i++){
     c_dst[i] = c_src[i];
   }
-
+  outl(SYNC_ADDR, 1);
 }
 
 void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
